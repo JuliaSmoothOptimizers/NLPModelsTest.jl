@@ -63,7 +63,7 @@ function test_breakage()
               :datetime => Dates.now()
              )
   cd(thispath)
-  repo = "JuliaSmoothOptimizers/NLPModels.jl"
+  repo = "JuliaSmoothOptimizers/NLPModelsTest.jl"
   user = split(repo, "/")[1]
   upstream = "https://$user:$key@github.com/$repo"
   Git.run(`remote add upstream $upstream`)
