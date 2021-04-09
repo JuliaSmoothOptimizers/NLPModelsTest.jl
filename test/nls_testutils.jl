@@ -15,21 +15,19 @@ for problem in TestUtils.nls_problems
     end
 
     @testset "Check Consistency" begin
-      consistent_nlss([nlss; nls_man])
+      consistent_nlss([nlss; nls_man], exclude = [])
     end
     @testset "Check dimensions" begin
-      check_nls_dimensions.(nlss)
-      check_nlp_dimensions.(nlss, exclude_hess=true)
+      check_nls_dimensions.(nlss, exclude = [])
+      check_nlp_dimensions.(nlss, exclude = [])
     end
     @testset "Check multiple precision" begin
       for nls in nlss
-        if typeof(nls) != LLSModel
-          multiple_precision_nls(nls)
-        end
+          multiple_precision_nls(nls, exclude = [])
       end
     end
     @testset "Check view subarray" begin
-      view_subarray_nls.(nlss)
+      view_subarray_nls.(nlss, exclude = [])
     end
   end
 end
