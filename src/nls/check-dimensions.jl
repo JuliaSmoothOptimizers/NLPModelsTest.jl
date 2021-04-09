@@ -8,7 +8,7 @@ To make this assertion in your code use
 
     @lencheck size input [more inputs separated by spaces]
 """
-function check_nls_dimensions(nls, exclude = [])
+function check_nls_dimensions(nls; exclude = [])
   n, m = nls.meta.nvar, nls_meta(nls).nequ
   nnzh, nnzj = nls_meta(nls).nnzh, nls_meta(nls).nnzj
 
