@@ -1,7 +1,7 @@
 export check_nls_dimensions
 
 """
-    check_nls_dimensions(nlp; exclude_hess=false)
+    check_nls_dimensions(nlp; exclude = [])
 
 Make sure NLS API functions will throw DimensionError if the inputs are not the correct dimension.
 To make this assertion in your code use

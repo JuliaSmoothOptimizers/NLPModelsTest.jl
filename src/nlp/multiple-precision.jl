@@ -1,7 +1,7 @@
 export multiple_precision_nlp
 
 """
-    multiple_precision_nlp(nlp; precisions=[...])
+    multiple_precision_nlp(nlp; precisions=[...], exclude = [ghjvprod])
 
 Check that the NLP API functions output type are the same as the input.
 In other words, make sure that the model handles multiple precisions.

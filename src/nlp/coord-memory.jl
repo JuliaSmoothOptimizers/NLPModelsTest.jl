@@ -1,7 +1,7 @@
 export coord_memory_nlp
 
 """
-    coord_memory_nlp(nlp)
+    coord_memory_nlp(nlp; exclude = [])
 
 Check that the allocated memory for in place coord methods is
 sufficiently smaller than their allocating counter parts.
