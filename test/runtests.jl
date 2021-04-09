@@ -5,19 +5,19 @@ using NLPModelsTest, Test
     @testset "Problem $p" begin
       nlp = eval(Symbol(p))()
       @testset "Consistency" begin
-        consistent_nlps([nlp, nlp])
+        consistent_nlps([nlp, nlp], exclude = [])
       end
       @testset "Check dimensions" begin
-        check_nlp_dimensions(nlp)
+        check_nlp_dimensions(nlp, exclude = [])
       end
       @testset "Multiple precision support" begin
-        multiple_precision_nlp(nlp)
+        multiple_precision_nlp(nlp, exclude = [])
       end
       @testset "View subarray" begin
-        view_subarray_nlp(nlp)
+        view_subarray_nlp(nlp, exclude = [])
       end
       @testset "Test coord memory" begin
-        coord_memory_nlp(nlp)
+        coord_memory_nlp(nlp, exclude = [])
       end
     end
   end
@@ -28,16 +28,16 @@ end
     @testset "Problem $p" begin
       nls = eval(Symbol(p))()
       @testset "Consistency" begin
-        consistent_nlss([nls, nls])
+        consistent_nlss([nls, nls], exclude = [])
       end
       @testset "Check dimensions" begin
-        check_nls_dimensions(nls)
+        check_nls_dimensions(nls, exclude = [])
       end
       @testset "Multiple precision support" begin
-        multiple_precision_nls(nls)
+        multiple_precision_nls(nls, exclude = [])
       end
       @testset "View subarray" begin
-        view_subarray_nls(nls)
+        view_subarray_nls(nls, exclude = [])
       end
     end
   end
