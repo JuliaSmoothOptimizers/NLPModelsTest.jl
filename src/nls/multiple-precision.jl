@@ -1,7 +1,7 @@
 export multiple_precision_nls
 
 """
-    multiple_precision_nls(nls; precisions=[...])
+    multiple_precision_nls(nls; precisions=[...], exclude = [])
 
 Check that the NLS API functions output type are the same as the input.
 In other words, make sure that the model handles multiple precisions.

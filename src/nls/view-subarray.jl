@@ -1,7 +1,7 @@
 export view_subarray_nls
 
 """
-    view_subarray_nls(nls)
+    view_subarray_nls(nls; exclude = [])
 
 Check that the API work with views, and that the results is correct.
 """

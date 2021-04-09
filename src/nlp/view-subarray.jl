@@ -1,11 +1,11 @@
 export view_subarray_nlp
 
 """
-    view_subarray_nlp(nlp)
+    view_subarray_nlp(nlp; exclude = [])
 
 Check that the API work with views, and that the results is correct.
 """
-function view_subarray_nlp(nlp, exclude = [])
+function view_subarray_nlp(nlp; exclude = [])
   @testset "Test view subarray of NLPs" begin
     n, m = nlp.meta.nvar, nlp.meta.ncon
     N = 2n
