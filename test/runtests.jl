@@ -1,4 +1,4 @@
-using NLPModelsTest, Test
+using NLPModels, NLPModelsTest, Test
 
 @testset "NLP tests" begin
   for p in NLPModelsTest.nlp_problems
@@ -27,17 +27,18 @@ end
   for p in NLPModelsTest.nls_problems
     @testset "Problem $p" begin
       nls = eval(Symbol(p))()
+      exclude = p == "LLS" ? [hess_coord, hess] : []
       @testset "Consistency" begin
-        consistent_nlss([nls, nls], exclude = [])
+        consistent_nlss([nls, nls], exclude = exclude)
       end
       @testset "Check dimensions" begin
-        check_nls_dimensions(nls, exclude = [])
+        check_nls_dimensions(nls, exclude = exclude)
       end
       @testset "Multiple precision support" begin
-        multiple_precision_nls(nls, exclude = [])
+        multiple_precision_nls(nls, exclude = exclude)
       end
       @testset "View subarray" begin
-        view_subarray_nls(nls, exclude = [])
+        view_subarray_nls(nls, exclude = exclude)
       end
     end
   end
