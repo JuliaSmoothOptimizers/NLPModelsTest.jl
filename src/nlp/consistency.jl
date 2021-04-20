@@ -14,7 +14,7 @@ The keyword `exclude` can be used to pass functions to be ignored, if some of th
 """
 function consistent_nlps(
   nlps;
-  exclude = [ghjvprod],
+  exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
   test_meta = true,
   test_slack = true,
   test_qn = true,
@@ -44,14 +44,14 @@ function consistent_nlps(
       [LBFGSModel(nlp) for nlp in nlps]
       [LSR1Model(nlp) for nlp in nlps]
     ]
-    consistent_functions([nlps; qnmodels], exclude = [hess, hess_coord, hprod, ghjvprod] ∪ exclude)
+    consistent_functions([nlps; qnmodels], exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude)
     consistent_counters([nlps; qnmodels])
   end
 
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
     slack_nlps = SlackModel.(nlps)
-    consistent_functions(slack_nlps, exclude = exclude)
+    consistent_functions(slack_nlps, exclude=union(exclude, [jth_hess, jth_hess_coord, jth_hprod]))
     consistent_counters(slack_nlps)
   end
 end
@@ -452,6 +452,64 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       end
     end
 
+    if !(jth_hess_coord in exclude)
+      k = m
+      Ls = Vector{Any}(undef, N)
+      for i = 1:N
+        V = jth_hess_coord(nlps[i], x, k)
+        I, J = hess_structure(nlps[i])
+        Ls[i] = sparse(I, J, V, n, n)
+      end
+      Lmin = minimum(map(norm, Ls))
+      for i = 1:N
+        for j = i+1:N
+          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        end
+      end
+    end
+
+    if !(jth_hess in exclude)
+      k = m
+      Ls = [jth_hess(nlp, x, k) for nlp in nlps]
+      Lmin = minimum(map(norm, Ls))
+      for i = 1:N
+        for j = i+1:N
+          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        end
+      end
+    end
+
+    if intersect([jth_hess, jth_hess_coord], exclude) == [] 
+      for i = 1:N
+        k = m
+        nlp = nlps[i]
+        Hx = jth_hess(nlp, x, k)
+        V = jth_hess_coord(nlp, x, k)
+        I, J = hess_structure(nlp)
+        @test length(I) == length(J) == length(V) == nlp.meta.nnzh
+        @test sparse(I, J, V, n, n) == Hx
+      end
+    end
+
+    if intersect([jth_hess, jth_hprod], exclude) == []
+      k = m
+      Lps = [jth_hprod(nlp, x, v, k) for nlp in nlps]
+      Lpmin = minimum(map(norm, Lps))
+      for i = 1:N
+        for j = i+1:N
+          @test isapprox(Lps[i], Lps[j], atol=rtol * max(Lpmin, 1.0))
+        end
+
+        if !(jth_hess_coord in exclude)
+          rows, cols = hess_structure(nlps[i])
+          vals = jth_hess_coord(nlps[i], x, k)
+          tmp_n = similar(Lps[i])
+          coo_sym_prod!(rows, cols, vals, v, tmp_n)
+          @test isapprox(Lps[i], tmp_n, atol=rtol * max(Lpmin, 1.0))
+        end
+      end
+    end
+
     g = 0.707 * ones(n)
 
     if !(ghjvprod in exclude)
@@ -461,6 +519,15 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
         for j = (i + 1):N
           @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
+      end
+    end
+
+    if intersect([ghjvprod, jth_hprod], exclude) == []  
+      for i = 1:N
+        nlp = nlps[i]
+        gHjv = ghjvprod(nlp, x, g, v)
+        tmp_ghjv = [dot(g, jth_hprod(nlp, x, v, j)) for j=1:m]
+        @test isapprox(gHjv, tmp_ghjv, atol=rtol * max(norm(gHjv), 1.0))
       end
     end
   end

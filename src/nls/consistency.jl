@@ -36,7 +36,7 @@ function consistent_nlss(
     consistent_nls_functions(slack_nlss, exclude = exclude)
     consistent_nls_counters(slack_nlss)
     consistent_counters(slack_nlss)
-    consistent_functions(slack_nlss, exclude = exclude)
+    consistent_functions(slack_nlss, exclude=union(exclude, [jth_hess, jth_hess_coord, jth_hprod]))
   end
 
   if test_ff
@@ -45,7 +45,7 @@ function consistent_nlss(
     consistent_nls_functions(ff_nlss, exclude = exclude)
     consistent_nls_counters(ff_nlss)
     consistent_counters(ff_nlss)
-    consistent_functions(ff_nlss, exclude = exclude)
+    consistent_functions(ff_nlss, exclude=union(exclude, [jth_hess, jth_hess_coord, jth_hprod]))
   end
 end
 

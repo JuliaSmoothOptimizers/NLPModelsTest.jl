@@ -8,7 +8,7 @@ To make this assertion in your code use
 
     @lencheck size input [more inputs separated by spaces]
 """
-function check_nlp_dimensions(nlp; exclude = [ghjvprod])
+function check_nlp_dimensions(nlp; exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod])
   n, m = nlp.meta.nvar, nlp.meta.ncon
   nnzh, nnzj = nlp.meta.nnzh, nlp.meta.nnzj
 
@@ -84,6 +84,20 @@ function check_nlp_dimensions(nlp; exclude = [ghjvprod])
       @test_throws DimensionError hess_coord!(nlp, badx, y, hvals)
       @test_throws DimensionError hess_coord!(nlp, x, bady, hvals)
       @test_throws DimensionError hess_coord!(nlp, x, y, badhvals)
+    end
+    if jth_hess ∉ exclude
+      @test_throws DimensionError jth_hess(nlp, badx, 1)
+    end
+    if jth_hess_coord ∉ exclude
+      @test_throws DimensionError jth_hess_coord!(nlp, badx, 1, hvals)
+      @test_throws DimensionError jth_hess_coord!(nlp, x, 1, badhvals)
+    end
+    if jth_hprod ∉ exclude
+      @test_throws DimensionError jth_hprod(nlp, badx, v, 1)
+      @test_throws DimensionError jth_hprod(nlp, x, badv, 1)
+      @test_throws DimensionError jth_hprod!(nlp, badx, v, 1, Hv)
+      @test_throws DimensionError jth_hprod!(nlp, x, badv, 1, Hv)
+      @test_throws DimensionError jth_hprod!(nlp, x, v, 1, badHv)
     end
     if ghjvprod ∉ exclude
       @test_throws DimensionError ghjvprod(nlp, badx, v, v)
