@@ -139,6 +139,42 @@ function NLPModels.hprod!(
   return Hv
 end
 
+function NLPModels.jth_hprod!(
+  nls :: MGH01Feas,
+  x :: AbstractVector{T},
+  v :: AbstractVector{T},
+  j :: Integer,
+  Hv :: AbstractVector{T}
+) where T
+  @lencheck 2 x v Hv
+  @rangecheck 1 2 j
+  NLPModels.increment!(nls, :neval_jhprod)
+  if j == 1
+    Hv .= zeros(T)
+  elseif j == 2
+    Hv .= [-20v[1]; T(0)]
+  end
+  return Hv
+end
+
+function NLPModels.jth_hess_coord!(
+  nls :: MGH01Feas,
+  x :: AbstractVector{T},
+  j :: Integer,
+  vals :: AbstractVector{T}
+) where {T}
+  @lencheck 1 vals
+  @lencheck 2 x
+  @rangecheck 1 2 j
+  NLPModels.increment!(nls, :neval_jhess)
+  if j == 1
+    vals .= zeros(T)
+  elseif j == 2
+    vals .= [T(-20)]
+  end
+  return vals
+end
+
 function NLPModels.ghjvprod!(
   nls::MGH01Feas,
   x::AbstractVector{T},

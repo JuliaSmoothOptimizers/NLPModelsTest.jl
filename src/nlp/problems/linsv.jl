@@ -132,6 +132,34 @@ function NLPModels.jtprod!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jtv
   return Jtv
 end
 
+function NLPModels.jth_hprod!(
+  nlp :: LINSV,
+  x :: AbstractVector{T},
+  v :: AbstractVector{T},
+  j :: Integer,
+  Hv :: AbstractVector{T}
+) where {T}
+  @lencheck 2 x v Hv
+  @rangecheck 1 2 j
+  NLPModels.increment!(nlp, :neval_jhprod)
+  Hv .= zeros(T)
+  return Hv
+end
+
+function NLPModels.jth_hess_coord!(
+  nlp :: LINSV,
+  x :: AbstractVector{T},
+  j :: Integer,
+  vals :: AbstractVector{T}
+) where {T}
+  @lencheck nlp.meta.nnzh vals
+  @lencheck 2 x
+  @rangecheck 1 2 j
+  NLPModels.increment!(nlp, :neval_jhess)
+  vals .= zeros(T)
+  return vals
+end
+
 function NLPModels.ghjvprod!(
   nlp::LINSV,
   x::AbstractVector{T},
