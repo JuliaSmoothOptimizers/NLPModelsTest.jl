@@ -150,9 +150,9 @@ function NLPModels.jth_hprod!(
   @rangecheck 1 2 j
   NLPModels.increment!(nls, :neval_jhprod)
   if j == 1
-    Hv .= zeros(T)
+    Hv .= zero(T)
   elseif j == 2
-    Hv .= [-20v[1]; T(0)]
+    Hv .= [-20v[1]; zero(T)]
   end
   return Hv
 end
@@ -168,7 +168,7 @@ function NLPModels.jth_hess_coord!(
   @rangecheck 1 2 j
   NLPModels.increment!(nls, :neval_jhess)
   if j == 1
-    vals .= zeros(T)
+    vals .= zero(T)
   elseif j == 2
     vals .= [T(-20)]
   end

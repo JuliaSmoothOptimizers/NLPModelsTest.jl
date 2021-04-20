@@ -302,11 +302,11 @@ function NLPModels.jth_hprod!(
   @rangecheck 1 3 j
   NLPModels.increment!(nls, :neval_jhprod)
   if j == 1 
-      Hv .= [T(0) T(0);T(0) 2] * v
+      Hv .= [0 0; 0 2] * v
   elseif j == 2
-      Hv .= [2 T(0);T(0) T(0)] * v
+      Hv .= [2 0; 0 0] * v
   elseif j == 3
-      Hv .= [2 T(0);T(0) 2] * v
+      Hv .= [2 0; 0 2] * v
   end
   return Hv
 end
@@ -322,11 +322,11 @@ function NLPModels.jth_hess_coord!(
   @rangecheck 1 3 j
   NLPModels.increment!(nls, :neval_jhess)
   if j == 1 
-      vals .= [T(0); T(0); T(2)]
+      vals .= T[0; 0; 2]
   elseif j == 2
-      vals .= [T(2); T(0); T(0)]
+      vals .= T[2; 0; 0]
   elseif j == 3
-      vals .= [T(2); T(0); T(2)]
+      vals .= T[2; 0; 2]
   end
   return vals
 end

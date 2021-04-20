@@ -191,7 +191,7 @@ function NLPModels.jth_hprod!(
   @lencheck 15 x v Hv
   @rangecheck 1 11 j
   NLPModels.increment!(nlp, :neval_jhprod)
-  Hv .= zeros(T)
+  Hv .= zero(T)
   return Hv
 end
 
@@ -205,7 +205,7 @@ function NLPModels.jth_hess_coord!(
   @lencheck 15 x
   @rangecheck 1 11 j
   NLPModels.increment!(nlp, :neval_jhess)
-  vals .= zeros(T)
+  vals .= zero(T)
   return vals
 end
 

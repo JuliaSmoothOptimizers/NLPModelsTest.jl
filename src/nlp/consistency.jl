@@ -51,7 +51,7 @@ function consistent_nlps(
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
     slack_nlps = SlackModel.(nlps)
-    consistent_functions(slack_nlps, exclude=union(exclude, [jth_hess, jth_hess_coord, jth_hprod]))
+    consistent_functions(slack_nlps, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
     consistent_counters(slack_nlps)
   end
 end
@@ -453,10 +453,9 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
     end
 
     if !(jth_hess_coord in exclude)
-      k = m
       Ls = Vector{Any}(undef, N)
       for i = 1:N
-        V = jth_hess_coord(nlps[i], x, k)
+        V = jth_hess_coord(nlps[i], x, 1)
         I, J = hess_structure(nlps[i])
         Ls[i] = sparse(I, J, V, n, n)
       end
@@ -469,8 +468,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
     end
 
     if !(jth_hess in exclude)
-      k = m
-      Ls = [jth_hess(nlp, x, k) for nlp in nlps]
+      Ls = [jth_hess(nlp, x, m) for nlp in nlps]
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
         for j = i+1:N
@@ -481,10 +479,9 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
 
     if intersect([jth_hess, jth_hess_coord], exclude) == [] 
       for i = 1:N
-        k = m
         nlp = nlps[i]
-        Hx = jth_hess(nlp, x, k)
-        V = jth_hess_coord(nlp, x, k)
+        Hx = jth_hess(nlp, x, 1)
+        V = jth_hess_coord(nlp, x, 1)
         I, J = hess_structure(nlp)
         @test length(I) == length(J) == length(V) == nlp.meta.nnzh
         @test sparse(I, J, V, n, n) == Hx
@@ -492,8 +489,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
     end
 
     if intersect([jth_hess, jth_hprod], exclude) == []
-      k = m
-      Lps = [jth_hprod(nlp, x, v, k) for nlp in nlps]
+      Lps = [jth_hprod(nlp, x, v, max(m-1, 1)) for nlp in nlps]
       Lpmin = minimum(map(norm, Lps))
       for i = 1:N
         for j = i+1:N
@@ -502,7 +498,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
 
         if !(jth_hess_coord in exclude)
           rows, cols = hess_structure(nlps[i])
-          vals = jth_hess_coord(nlps[i], x, k)
+          vals = jth_hess_coord(nlps[i], x, max(m-1, 1))
           tmp_n = similar(Lps[i])
           coo_sym_prod!(rows, cols, vals, v, tmp_n)
           @test isapprox(Lps[i], tmp_n, atol=rtol * max(Lpmin, 1.0))
