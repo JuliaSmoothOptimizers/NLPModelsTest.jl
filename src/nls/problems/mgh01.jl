@@ -27,9 +27,9 @@ F(x) = \\begin{bmatrix}
 
 Starting point: `[-1.2; 1]`.
 """
-mutable struct MGH01 <: AbstractNLSModel
-  meta :: NLPModelMeta
-  nls_meta :: NLSMeta
+mutable struct MGH01{T, S} <: AbstractNLSModel{T, S}
+  meta :: NLPModelMeta{T, S}
+  nls_meta :: NLSMeta{T, S}
   counters :: NLSCounters
 end
 

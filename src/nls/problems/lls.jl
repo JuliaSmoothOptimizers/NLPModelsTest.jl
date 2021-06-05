@@ -22,9 +22,9 @@ x_2 - 2
 
 Starting point: `[0; 0]`.
 """
-mutable struct LLS <: AbstractNLSModel
-  meta :: NLPModelMeta
-  nls_meta :: NLSMeta
+mutable struct LLS{T, S} <: AbstractNLSModel{T, S}
+  meta :: NLPModelMeta{T, S}
+  nls_meta :: NLSMeta{T, S}
   counters :: NLSCounters
 end
 

@@ -20,8 +20,8 @@ export MGH01Feas
 
 Starting point: `[-1.2; 1]`.
 """
-mutable struct MGH01Feas <: AbstractNLPModel
-  meta :: NLPModelMeta
+mutable struct MGH01Feas{T, S} <: AbstractNLPModel{T, S}
+  meta :: NLPModelMeta{T, S}
   counters :: Counters
 end
 

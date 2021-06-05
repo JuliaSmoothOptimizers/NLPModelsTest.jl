@@ -33,9 +33,9 @@ x_{15}^2 - 15^2
 
 Starting point: `zeros(15)`.
 """
-mutable struct NLSLC <: AbstractNLSModel
-  meta :: NLPModelMeta
-  nls_meta :: NLSMeta
+mutable struct NLSLC{T, S} <: AbstractNLSModel{T, S}
+  meta :: NLPModelMeta{T, S}
+  nls_meta :: NLSMeta{T, S}
   counters :: NLSCounters
 end
 
