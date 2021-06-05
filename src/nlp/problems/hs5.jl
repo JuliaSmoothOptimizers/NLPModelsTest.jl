@@ -15,8 +15,8 @@ export HS5
 
 Starting point: `[0.0; 0.0]`.
 """
-mutable struct HS5 <: AbstractNLPModel
-  meta :: NLPModelMeta
+mutable struct HS5{T, S} <: AbstractNLPModel{T, S}
+  meta :: NLPModelMeta{T, S}
   counters :: Counters
 end
 

@@ -15,13 +15,13 @@ export LINSV
 
 Starting point: `[0; 0]`.
 """
-mutable struct LINSV <: AbstractNLPModel
-  meta :: NLPModelMeta
+mutable struct LINSV{T, S} <: AbstractNLPModel{T, S}
+  meta :: NLPModelMeta{T, S}
   counters :: Counters
 end
 
 function LINSV()
-  meta = NLPModelMeta(2, nnzh=0, nnzj=3, ncon=2, x0=zeros(2), lcon = [3; 1], ucon=[Inf; Inf], name="LINSV_manual")
+  meta = NLPModelMeta(2, nnzh=0, nnzj=3, ncon=2, x0=zeros(2), lcon = [3.0; 1.0], ucon=[Inf; Inf], name="LINSV_manual")
 
   return LINSV(meta, Counters())
 end

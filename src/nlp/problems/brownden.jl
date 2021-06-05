@@ -19,8 +19,8 @@ export BROWNDEN
 
 Starting point: `[25.0; 5.0; -5.0; -1.0]`
 """
-mutable struct BROWNDEN <: AbstractNLPModel
-  meta :: NLPModelMeta
+mutable struct BROWNDEN{T, S} <: AbstractNLPModel{T, S}
+  meta :: NLPModelMeta{T, S}
   counters :: Counters
 end
 

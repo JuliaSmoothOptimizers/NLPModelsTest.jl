@@ -24,8 +24,8 @@ export LINCON
 
 Starting point: `zeros(15)`.
 """
-mutable struct LINCON <: AbstractNLPModel
-  meta :: NLPModelMeta
+mutable struct LINCON{T, S} <: AbstractNLPModel{T, S}
+  meta :: NLPModelMeta{T, S}
   counters :: Counters
 end
 
