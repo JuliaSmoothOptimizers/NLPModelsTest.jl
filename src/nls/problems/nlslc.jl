@@ -39,12 +39,21 @@ mutable struct NLSLC{T, S} <: AbstractNLSModel{T, S}
   counters :: NLSCounters
 end
 
-function NLSLC()
-  meta = NLPModelMeta(15, nnzj=17, ncon=11, x0=zeros(15), lcon = [22.0; 1.0; -Inf; -11.0; -1.0; 1.0; -5.0; -6.0; -Inf * ones(3)], ucon=[22.0; Inf; 16.0; 9.0; -1.0; 1.0; Inf * ones(2); 1.0; 2.0; 3.0], name="NLSLINCON")
-  nls_meta = NLSMeta(15, 15, nnzj=15, nnzh=15)
+function NLSLC(::Type{T}) where T
+  meta = NLPModelMeta{T, Vector{T}}(
+    15,
+    nnzj=17,
+    ncon=11,
+    x0=zeros(T, 15),
+    lcon=T[22.0; 1.0; -Inf; -11.0; -1.0; 1.0; -5.0; -6.0; -Inf * ones(3)],
+    ucon=T[22.0; Inf; 16.0; 9.0; -1.0; 1.0; Inf * ones(2); 1.0; 2.0; 3.0],
+    name="NLSLINCON",
+  )
+  nls_meta = NLSMeta{T, Vector{T}}(15, 15, nnzj=15, nnzh=15)
 
   return NLSLC(meta, nls_meta, NLSCounters())
 end
+NLSLC() = NLSLC(Float64)
 
 function NLPModels.residual!(nls :: NLSLC, x :: AbstractVector, Fx :: AbstractVector)
   @lencheck 15 x Fx
