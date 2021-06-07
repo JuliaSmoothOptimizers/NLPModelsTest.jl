@@ -25,11 +25,21 @@ mutable struct MGH01Feas{T, S} <: AbstractNLPModel{T, S}
   counters :: Counters
 end
 
-function MGH01Feas()
-  meta = NLPModelMeta(2, x0=[-1.2; 1.0], name="MGH01Feas_manual", ncon=2, lcon=zeros(2), ucon=zeros(2), nnzj=3, nnzh=1)
+function MGH01Feas(::Type{T}) where T
+  meta = NLPModelMeta{T, Vector{T}}(
+    2,
+    x0=T[-1.2; 1.0],
+    name="MGH01Feas_manual",
+    ncon=2,
+    lcon=zeros(T, 2),
+    ucon=zeros(T, 2),
+    nnzj=3,
+    nnzh=1,
+  )
 
   return MGH01Feas(meta, Counters())
 end
+MGH01Feas() = MGH01Feas(Float64)
 
 function NLPModels.obj(nlp :: MGH01Feas, x :: AbstractVector)
   @lencheck 2 x

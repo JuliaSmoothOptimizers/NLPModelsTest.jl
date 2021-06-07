@@ -24,11 +24,12 @@ mutable struct BROWNDEN{T, S} <: AbstractNLPModel{T, S}
   counters :: Counters
 end
 
-function BROWNDEN()
-  meta = NLPModelMeta(4, x0=[25.0; 5.0; -5.0; -1.0], name="BROWNDEN_manual", nnzh=10)
+function BROWNDEN(::Type{T}) where T
+  meta = NLPModelMeta{T, Vector{T}}(4, x0=T[25; 5; -5; -1], name="BROWNDEN_manual", nnzh=10)
 
   return BROWNDEN(meta, Counters())
 end
+BROWNDEN() = BROWNDEN(Float64)
 
 function NLPModels.obj(nlp :: BROWNDEN, x :: AbstractVector{T}) where T
   @lencheck 4 x

@@ -33,12 +33,13 @@ mutable struct MGH01{T, S} <: AbstractNLSModel{T, S}
   counters :: NLSCounters
 end
 
-function MGH01()
-  meta = NLPModelMeta(2, x0=[-1.2; 1.0], name="MGH01_manual")
-  nls_meta = NLSMeta(2, 2, nnzj=3, nnzh=1)
+function MGH01(::Type{T}) where T
+  meta = NLPModelMeta{T, Vector{T}}(2, x0=T[-1.2; 1], name="MGH01_manual")
+  nls_meta = NLSMeta{T, Vector{T}}(2, 2, nnzj=3, nnzh=1)
 
   return MGH01(meta, nls_meta, NLSCounters())
 end
+MGH01() = MGH01(Float64)
 
 function NLPModels.residual!(nls :: MGH01, x :: AbstractVector, Fx :: AbstractVector)
   @lencheck 2 x Fx

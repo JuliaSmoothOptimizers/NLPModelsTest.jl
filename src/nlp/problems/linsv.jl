@@ -20,11 +20,21 @@ mutable struct LINSV{T, S} <: AbstractNLPModel{T, S}
   counters :: Counters
 end
 
-function LINSV()
-  meta = NLPModelMeta(2, nnzh=0, nnzj=3, ncon=2, x0=zeros(2), lcon = [3.0; 1.0], ucon=[Inf; Inf], name="LINSV_manual")
+function LINSV(::Type{T}) where T
+  meta = NLPModelMeta{T, Vector{T}}(
+    2,
+    nnzh=0,
+    nnzj=3,
+    ncon=2,
+    x0=zeros(T, 2),
+    lcon=T[3; 1],
+    ucon=T[Inf; Inf],
+    name="LINSV_manual",
+  )
 
   return LINSV(meta, Counters())
 end
+LINSV() = LINSV(Float64)
 
 function NLPModels.obj(nlp :: LINSV, x :: AbstractVector)
   @lencheck 2 x
