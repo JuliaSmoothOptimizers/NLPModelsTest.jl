@@ -12,7 +12,15 @@ In other words, if you create two models of the same problem, they should be con
 
 The keyword `exclude` can be used to pass functions to be ignored, if some of the models don't implement that function.
 """
-function consistent_nlps(nlps; exclude=[ghjvprod], test_meta=true, test_slack=true, rtol=1.0e-8)
+function consistent_nlps(
+  nlps;
+  exclude=[ghjvprod],
+  test_meta=true,
+  test_slack=true,
+  test_qn=true,
+  test_derivative=true,
+  rtol=1.0e-8,
+)
   consistent_counters(nlps)
   test_meta && consistent_meta(nlps, rtol=rtol)
   consistent_functions(nlps, rtol=rtol, exclude=exclude)
@@ -21,18 +29,22 @@ function consistent_nlps(nlps; exclude=[ghjvprod], test_meta=true, test_slack=tr
     reset!(nlp)
   end
   consistent_counters(nlps)
-  for nlp in nlps
-    @assert length(gradient_check(nlp)) == 0
-    @assert length(jacobian_check(nlp)) == 0
-    @assert sum(map(length, values(hessian_check(nlp)))) == 0
-    @assert sum(map(length, values(hessian_check_from_grad(nlp)))) == 0
+  if test_derivative
+    for nlp in nlps
+      @assert length(gradient_check(nlp)) == 0
+      @assert length(jacobian_check(nlp)) == 0
+      @assert sum(map(length, values(hessian_check(nlp)))) == 0
+      @assert sum(map(length, values(hessian_check_from_grad(nlp)))) == 0
+    end
   end
 
-  # Test Quasi-Newton models
-  qnmodels = [[LBFGSModel(nlp) for nlp in nlps];
-              [LSR1Model(nlp) for nlp in nlps]]
-  consistent_functions([nlps; qnmodels], exclude=[hess, hess_coord, hprod, ghjvprod] ∪ exclude)
-  consistent_counters([nlps; qnmodels])
+  if test_qn
+    # Test Quasi-Newton models
+    qnmodels = [[LBFGSModel(nlp) for nlp in nlps];
+                [LSR1Model(nlp) for nlp in nlps]]
+    consistent_functions([nlps; qnmodels], exclude=[hess, hess_coord, hprod, ghjvprod] ∪ exclude)
+    consistent_counters([nlps; qnmodels])
+  end
 
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
