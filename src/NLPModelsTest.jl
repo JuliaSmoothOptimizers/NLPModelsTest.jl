@@ -5,7 +5,8 @@ using LinearAlgebra, SparseArrays, Test
 #jso
 using NLPModels, NLPModelsModifiers
 
-const nlp_problems = ["BROWNDEN", "HS5", "HS6", "HS10", "HS11", "HS14", "LINCON", "LINSV", "MGH01Feas"]
+const nlp_problems =
+  ["BROWNDEN", "HS5", "HS6", "HS10", "HS11", "HS14", "LINCON", "LINSV", "MGH01Feas"]
 const nls_problems = ["LLS", "MGH01", "NLSHS20", "NLSLC"]
 
 # Including problems so that they won't be multiply loaded

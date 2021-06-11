@@ -9,9 +9,11 @@ In other words, make sure that the model handles multiple precisions.
 The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
-function multiple_precision_nlp(nlp :: AbstractNLPModel;
-                                precisions :: Array = [Float16, Float32, Float64, BigFloat],
-                                exclude = [ghjvprod])
+function multiple_precision_nlp(
+  nlp::AbstractNLPModel;
+  precisions::Array = [Float16, Float32, Float64, BigFloat],
+  exclude = [ghjvprod],
+)
   for T in precisions
     x = ones(T, nlp.meta.nvar)
     @test obj ∈ exclude || typeof(obj(nlp, x)) == T
@@ -39,7 +41,7 @@ function multiple_precision_nlp(nlp :: AbstractNLPModel;
         @test eltype(jac_op!(nlp, rows, cols, vals, Av, Atv)) == T
       end
       @test hess ∈ exclude || eltype(hess(nlp, x, y)) == T
-      @test hess ∈ exclude || eltype(hess(nlp, x, y, obj_weight=one(T))) == T
+      @test hess ∈ exclude || eltype(hess(nlp, x, y, obj_weight = one(T))) == T
       @test hess_op ∈ exclude || eltype(hess_op(nlp, x, y)) == T
       if hess_coord ∉ exclude && hess_op ∉ exclude
         rows, cols = hess_structure(nlp)
