@@ -12,11 +12,11 @@ function check_nls_dimensions(nls; exclude = [])
   n, m = nls.meta.nvar, nls_meta(nls).nequ
   nnzh, nnzj = nls_meta(nls).nnzh, nls_meta(nls).nnzj
 
-  x, badx   = nls.meta.x0, zeros(n + 1)
+  x, badx = nls.meta.x0, zeros(n + 1)
   Fx, badFx = zeros(m), zeros(m + 1)
-  v, badv   = ones(n), zeros(n + 1)
-  w, badw     = ones(m), zeros(m + 1)
-  Jv, badJv   = zeros(m), zeros(m + 1)
+  v, badv = ones(n), zeros(n + 1)
+  w, badw = ones(m), zeros(m + 1)
+  Jv, badJv = zeros(m), zeros(m + 1)
   Jtw, badJtw = zeros(n), zeros(n + 1)
   Hv, badHv = zeros(n), zeros(n + 1)
   jrows, badjrows = zeros(Int, nnzj), zeros(Int, nnzj + 1)

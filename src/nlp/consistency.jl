@@ -14,16 +14,16 @@ The keyword `exclude` can be used to pass functions to be ignored, if some of th
 """
 function consistent_nlps(
   nlps;
-  exclude=[ghjvprod],
-  test_meta=true,
-  test_slack=true,
-  test_qn=true,
-  test_derivative=true,
-  rtol=1.0e-8,
+  exclude = [ghjvprod],
+  test_meta = true,
+  test_slack = true,
+  test_qn = true,
+  test_derivative = true,
+  rtol = 1.0e-8,
 )
   consistent_counters(nlps)
-  test_meta && consistent_meta(nlps, rtol=rtol)
-  consistent_functions(nlps, rtol=rtol, exclude=exclude)
+  test_meta && consistent_meta(nlps, rtol = rtol)
+  consistent_functions(nlps, rtol = rtol, exclude = exclude)
   consistent_counters(nlps)
   for nlp in nlps
     reset!(nlp)
@@ -40,30 +40,31 @@ function consistent_nlps(
 
   if test_qn
     # Test Quasi-Newton models
-    qnmodels = [[LBFGSModel(nlp) for nlp in nlps];
-                [LSR1Model(nlp) for nlp in nlps]]
-    consistent_functions([nlps; qnmodels], exclude=[hess, hess_coord, hprod, ghjvprod] ∪ exclude)
+    qnmodels = [
+      [LBFGSModel(nlp) for nlp in nlps]
+      [LSR1Model(nlp) for nlp in nlps]
+    ]
+    consistent_functions([nlps; qnmodels], exclude = [hess, hess_coord, hprod, ghjvprod] ∪ exclude)
     consistent_counters([nlps; qnmodels])
   end
 
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
     slack_nlps = SlackModel.(nlps)
-    consistent_functions(slack_nlps, exclude=exclude)
+    consistent_functions(slack_nlps, exclude = exclude)
     consistent_counters(slack_nlps)
   end
 end
 
-function consistent_meta(nlps; rtol=1.0e-8)
-  fields = [:nvar, :x0, :lvar, :uvar, :ifix, :ilow, :iupp, :irng, :ifree, :ncon,
-    :y0]
+function consistent_meta(nlps; rtol = 1.0e-8)
+  fields = [:nvar, :x0, :lvar, :uvar, :ifix, :ilow, :iupp, :irng, :ifree, :ncon, :y0]
   N = length(nlps)
   for field in fields
     @testset "Field $field" begin
-      for i = 1:N-1
+      for i = 1:(N - 1)
         fi = getfield(nlps[i].meta, field)
-        fj = getfield(nlps[i+1].meta, field)
-        @test isapprox(fi, fj, rtol=rtol)
+        fj = getfield(nlps[i + 1].meta, field)
+        @test isapprox(fi, fj, rtol = rtol)
       end
     end
   end
@@ -75,8 +76,8 @@ function consistent_counters(nlps)
   for field in fieldnames(Counters)
     V = [eval(field)(nlp) for nlp in nlps]
     @testset "Field $field" begin
-      for i = 1:N-1
-        @test V[i] == V[i+1]
+      for i = 1:(N - 1)
+        @test V[i] == V[i + 1]
       end
     end
   end
@@ -84,15 +85,14 @@ function consistent_counters(nlps)
   @test all(V .== V[1])
 end
 
-function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
-
+function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
   N = length(nlps)
   n = nlps[1].meta.nvar
   m = nlps[1].meta.ncon
 
   tmp_n = zeros(n)
   tmp_m = zeros(m)
-  tmp_nn = zeros(n,n)
+  tmp_nn = zeros(n, n)
 
   x = 10 * [-(-1.0)^i for i = 1:n]
 
@@ -100,18 +100,18 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
     fs = [obj(nlp, x) for nlp in nlps]
     fmin = minimum(map(abs, fs))
     for i = 1:N
-      for j = i+1:N
-        @test isapprox(fs[i], fs[j], atol=rtol * max(fmin, 1.0))
+      for j = (i + 1):N
+        @test isapprox(fs[i], fs[j], atol = rtol * max(fmin, 1.0))
       end
 
       if !(objcons in exclude)
         # Test objcons for unconstrained problems
         if m == 0
           f, c = objcons(nlps[i], x)
-          @test isapprox(fs[i], f, rtol=rtol)
+          @test isapprox(fs[i], f, rtol = rtol)
           @test c == []
           f, tmpc = objcons!(nlps[i], x, c)
-          @test isapprox(fs[i], f, rtol=rtol)
+          @test isapprox(fs[i], f, rtol = rtol)
           @test c == []
           @test tmpc == []
         end
@@ -123,21 +123,21 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
     gs = Any[grad(nlp, x) for nlp in nlps]
     gmin = minimum(map(norm, gs))
     for i = 1:N
-      for j = i+1:N
-        @test isapprox(gs[i], gs[j], atol=rtol * max(gmin, 1.0))
+      for j = (i + 1):N
+        @test isapprox(gs[i], gs[j], atol = rtol * max(gmin, 1.0))
       end
       tmpg = grad!(nlps[i], x, tmp_n)
-      @test isapprox(gs[i], tmp_n, atol=rtol * max(gmin, 1.0))
-      @test isapprox(tmpg, tmp_n, atol=rtol * max(gmin, 1.0))
+      @test isapprox(gs[i], tmp_n, atol = rtol * max(gmin, 1.0))
+      @test isapprox(tmpg, tmp_n, atol = rtol * max(gmin, 1.0))
 
       if !(objgrad in exclude)
         f, g = objgrad(nlps[i], x)
-        @test isapprox(fs[i], f, atol=rtol * max(abs(f), 1.0))
-        @test isapprox(gs[i], g, atol=rtol * max(gmin, 1.0))
+        @test isapprox(fs[i], f, atol = rtol * max(abs(f), 1.0))
+        @test isapprox(gs[i], g, atol = rtol * max(gmin, 1.0))
         f, tmpg = objgrad!(nlps[i], x, g)
-        @test isapprox(fs[i], f, atol=rtol * max(abs(f), 1.0))
-        @test isapprox(gs[i], g, atol=rtol * max(gmin, 1.0))
-        @test isapprox(g, tmpg, atol=rtol * max(gmin, 1.0))
+        @test isapprox(fs[i], f, atol = rtol * max(abs(f), 1.0))
+        @test isapprox(gs[i], g, atol = rtol * max(gmin, 1.0))
+        @test isapprox(g, tmpg, atol = rtol * max(gmin, 1.0))
       end
     end
   end
@@ -151,18 +151,18 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
     end
     Hmin = minimum(map(norm, Hs))
     for i = 1:N
-      for j = i+1:N
-        @test isapprox(Hs[i], Hs[j], atol=rtol * max(Hmin, 1.0))
+      for j = (i + 1):N
+        @test isapprox(Hs[i], Hs[j], atol = rtol * max(Hmin, 1.0))
       end
-      V = hess_coord(nlps[i], x, obj_weight=0.0)
+      V = hess_coord(nlps[i], x, obj_weight = 0.0)
       @test norm(V) ≈ 0
       σ = 3.14
-      V = hess_coord(nlps[i], x, obj_weight=σ)
+      V = hess_coord(nlps[i], x, obj_weight = σ)
       I, J = hess_structure(nlps[i])
       tmp_h = sparse(I, J, V, n, n)
-      @test isapprox(σ*Hs[i], tmp_h, atol=rtol * max(Hmin, 1.0))
+      @test isapprox(σ * Hs[i], tmp_h, atol = rtol * max(Hmin, 1.0))
       tmp_V = zeros(nlps[i].meta.nnzh)
-      hess_coord!(nlps[i], x, tmp_V, obj_weight=σ)
+      hess_coord!(nlps[i], x, tmp_V, obj_weight = σ)
       @test tmp_V == V
     end
   end
@@ -171,56 +171,56 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
     Hs = Any[hess(nlp, x) for nlp in nlps]
     Hmin = minimum(map(norm, Hs))
     for i = 1:N
-      for j = i+1:N
-        @test isapprox(Hs[i], Hs[j], atol=rtol * max(Hmin, 1.0))
+      for j = (i + 1):N
+        @test isapprox(Hs[i], Hs[j], atol = rtol * max(Hmin, 1.0))
       end
-      tmp_nn = hess(nlps[i], x, obj_weight=0.0)
+      tmp_nn = hess(nlps[i], x, obj_weight = 0.0)
       @test norm(tmp_nn) ≈ 0
       σ = 3.14
-      tmp_nn = hess(nlps[i], x, obj_weight=σ)
-      @test isapprox(σ*Hs[i], tmp_nn, atol=rtol * max(Hmin, 1.0))
+      tmp_nn = hess(nlps[i], x, obj_weight = σ)
+      @test isapprox(σ * Hs[i], tmp_nn, atol = rtol * max(Hmin, 1.0))
     end
   end
 
   v = 10 * [-(-1.0)^i for i = 1:n]
 
   if !(hprod in exclude)
-    for σ = [1.0; 0.5; 0.0]
-      Hvs = Any[hprod(nlp, x, v, obj_weight=σ) for nlp in nlps]
-      Hopvs = Any[hess_op(nlp, x, obj_weight=σ) * v for nlp in nlps]
+    for σ in [1.0; 0.5; 0.0]
+      Hvs = Any[hprod(nlp, x, v, obj_weight = σ) for nlp in nlps]
+      Hopvs = Any[hess_op(nlp, x, obj_weight = σ) * v for nlp in nlps]
       Hvmin = minimum(map(norm, Hvs))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Hvs[i], Hvs[j], atol=rtol * max(Hvmin, 1.0))
-          @test isapprox(Hvs[i], Hopvs[j], atol=rtol * max(Hvmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Hvs[i], Hvs[j], atol = rtol * max(Hvmin, 1.0))
+          @test isapprox(Hvs[i], Hopvs[j], atol = rtol * max(Hvmin, 1.0))
         end
-        tmphv = hprod!(nlps[i], x, v, tmp_n, obj_weight=σ)
-        @test isapprox(Hvs[i], tmp_n, atol=rtol * max(Hvmin, 1.0))
-        @test isapprox(tmphv, tmp_n, atol=rtol * max(Hvmin, 1.0))
+        tmphv = hprod!(nlps[i], x, v, tmp_n, obj_weight = σ)
+        @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
+        @test isapprox(tmphv, tmp_n, atol = rtol * max(Hvmin, 1.0))
         fill!(tmp_n, 0)
-        H = hess_op!(nlps[i], x, tmp_n, obj_weight=σ)
+        H = hess_op!(nlps[i], x, tmp_n, obj_weight = σ)
         res = H * v
-        @test isapprox(res, Hvs[i], atol=rtol * max(Hvmin, 1.0))
-        @test isapprox(res, tmp_n, atol=rtol * max(Hvmin, 1.0))
+        @test isapprox(res, Hvs[i], atol = rtol * max(Hvmin, 1.0))
+        @test isapprox(res, tmp_n, atol = rtol * max(Hvmin, 1.0))
 
         if !(hess_coord in exclude)
           rows, cols = hess_structure(nlps[i])
-          vals = hess_coord(nlps[i], x, obj_weight=σ)
+          vals = hess_coord(nlps[i], x, obj_weight = σ)
           hprod!(nlps[i], rows, cols, vals, v, tmp_n)
-          @test isapprox(Hvs[i], tmp_n, atol=rtol * max(Hvmin, 1.0))
-          hprod!(nlps[i], x, rows, cols, v, tmp_n, obj_weight=σ)
-          @test isapprox(Hvs[i], tmp_n, atol=rtol * max(Hvmin, 1.0))
+          @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
+          hprod!(nlps[i], x, rows, cols, v, tmp_n, obj_weight = σ)
+          @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
 
-          H = hess_op!(nlps[i], x, rows, cols, tmp_n, obj_weight=σ)
+          H = hess_op!(nlps[i], x, rows, cols, tmp_n, obj_weight = σ)
           res = H * v
-          @test isapprox(Hvs[i], res, atol=rtol * max(Hvmin, 1.0))
-          H = hess_op!(nlps[i], x, tmp_n, obj_weight=σ)
+          @test isapprox(Hvs[i], res, atol = rtol * max(Hvmin, 1.0))
+          H = hess_op!(nlps[i], x, tmp_n, obj_weight = σ)
           res = H * v
-          @test isapprox(Hvs[i], res, atol=rtol * max(Hvmin, 1.0))
+          @test isapprox(Hvs[i], res, atol = rtol * max(Hvmin, 1.0))
         end
         if σ == 1 # Check hprod! with default obj_weight
           hprod!(nlps[i], x, v, tmp_n)
-          @test isapprox(Hvs[i], tmp_n, atol=rtol * max(Hvmin, 1.0))
+          @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
         end
       end
     end
@@ -229,8 +229,8 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
   if intersect([hess, hess_coord], exclude) == []
     for i = 1:N
       nlp = nlps[i]
-      Hx = hess(nlp, x, obj_weight=0.5)
-      V = hess_coord(nlp, x, obj_weight=0.5)
+      Hx = hess(nlp, x, obj_weight = 0.5)
+      V = hess_coord(nlp, x, obj_weight = 0.5)
       I, J = hess_structure(nlp)
       @test length(I) == length(J) == length(V) == nlp.meta.nnzh
       @test sparse(I, J, V, n, n) == Hx
@@ -245,8 +245,8 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       cmin = minimum(map(norm, cs))
       for i = 1:N
         tmpc = cons!(nlps[i], x, tmp_m)
-        @test isapprox(cs[i], tmp_m, atol=rtol * max(cmin, 1.0))
-        @test isapprox(tmpc, tmp_m, atol=rtol * max(cmin, 1.0))
+        @test isapprox(cs[i], tmp_m, atol = rtol * max(cmin, 1.0))
+        @test isapprox(tmpc, tmp_m, atol = rtol * max(cmin, 1.0))
         ci, li, ui = copy(cs[i]), cls[i], cus[i]
         for k = 1:m
           if li[k] > -Inf
@@ -255,7 +255,7 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
             ci[k] -= ui[k]
           end
         end
-        for j = i+1:N
+        for j = (i + 1):N
           cj, lj, uj = copy(cs[j]), cls[j], cus[j]
           for k = 1:m
             if lj[k] > -Inf
@@ -264,17 +264,17 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
               cj[k] -= uj[k]
             end
           end
-          @test isapprox(norm(ci), norm(cj), atol=rtol * max(cmin, 1.0))
+          @test isapprox(norm(ci), norm(cj), atol = rtol * max(cmin, 1.0))
         end
 
         if !(objcons in exclude)
           f, c = objcons(nlps[i], x)
-          @test isapprox(fs[i], f, atol=rtol * max(abs(f), 1.0))
-          @test isapprox(cs[i],c, atol=rtol * max(cmin, 1.0))
+          @test isapprox(fs[i], f, atol = rtol * max(abs(f), 1.0))
+          @test isapprox(cs[i], c, atol = rtol * max(cmin, 1.0))
           f, tmpc = objcons!(nlps[i], x, c)
-          @test isapprox(fs[i], f, atol=rtol * max(abs(f), 1.0))
-          @test isapprox(cs[i],c, atol=rtol * max(cmin, 1.0))
-          @test isapprox(c, tmpc, atol=rtol * max(cmin, 1.0))
+          @test isapprox(fs[i], f, atol = rtol * max(abs(f), 1.0))
+          @test isapprox(cs[i], c, atol = rtol * max(cmin, 1.0))
+          @test isapprox(c, tmpc, atol = rtol * max(cmin, 1.0))
         end
       end
     end
@@ -284,13 +284,13 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       Jmin = minimum(map(norm, Js))
       for i = 1:N
         vi = norm(Js[i])
-        for j = i+1:N
-            @test isapprox(vi, norm(Js[j]), atol=rtol * max(Jmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Js[j]), atol = rtol * max(Jmin, 1.0))
         end
         V = jac_coord(nlps[i], x)
         I, J = jac_structure(nlps[i])
         @test length(I) == length(J) == length(V) == nlps[i].meta.nnzj
-        @test isapprox(sparse(I, J, V, m, n), Js[i], atol=rtol * max(Jmin, 1.0))
+        @test isapprox(sparse(I, J, V, m, n), Js[i], atol = rtol * max(Jmin, 1.0))
         IS, JS = zeros(Int, nlps[i].meta.nnzj), zeros(Int, nlps[i].meta.nnzj)
         jac_structure!(nlps[i], IS, JS)
         @test IS == I
@@ -305,31 +305,31 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       Jops = Any[jac_op(nlp, x) for nlp in nlps]
       Jps = Any[jprod(nlp, x, v) for nlp in nlps]
       for i = 1:N
-        @test isapprox(Jps[i], Jops[i] * v, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(Jps[i], Jops[i] * v, atol = rtol * max(Jmin, 1.0))
         vi = norm(Jps[i])
-        for j = i+1:N
-          @test isapprox(vi, norm(Jps[j]), atol=rtol * max(Jmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jps[j]), atol = rtol * max(Jmin, 1.0))
         end
         tmpjv = jprod!(nlps[i], x, v, tmp_m)
-        @test isapprox(tmpjv, tmp_m, atol=rtol * max(Jmin, 1.0))
-        @test isapprox(Jps[i], tmp_m, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(tmpjv, tmp_m, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(Jps[i], tmp_m, atol = rtol * max(Jmin, 1.0))
         fill!(tmp_m, 0)
         J = jac_op!(nlps[i], x, tmp_m, tmp_n)
         res = J * v
-        @test isapprox(res, Jps[i], atol=rtol * max(Jmin, 1.0))
-        @test isapprox(res, tmp_m, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_m, atol = rtol * max(Jmin, 1.0))
 
         if !(jac_coord in exclude)
           rows, cols = jac_structure(nlps[i])
           vals = jac_coord(nlps[i], x)
           jprod!(nlps[i], rows, cols, vals, v, tmp_m)
-          @test isapprox(Jps[i], tmp_m, atol=rtol * max(Jmin, 1.0))
+          @test isapprox(Jps[i], tmp_m, atol = rtol * max(Jmin, 1.0))
           jprod!(nlps[i], x, rows, cols, v, tmp_m)
-          @test isapprox(Jps[i], tmp_m, atol=rtol * max(Jmin, 1.0))
+          @test isapprox(Jps[i], tmp_m, atol = rtol * max(Jmin, 1.0))
 
           J = jac_op!(nlps[i], x, rows, cols, tmp_m, tmp_n)
           res = J * v
-          @test isapprox(res, Jps[i], atol=rtol * max(Jmin, 1.0))
+          @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
         end
       end
     end
@@ -338,31 +338,31 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       w = 10 * [-(-1.0)^i for i = 1:m]
       Jtps = Any[jtprod(nlp, x, w) for nlp in nlps]
       for i = 1:N
-        @test isapprox(Jtps[i], Jops[i]' * w, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(Jtps[i], Jops[i]' * w, atol = rtol * max(Jmin, 1.0))
         vi = norm(Jtps[i])
-        for j = i+1:N
-          @test isapprox(vi, norm(Jtps[j]), atol=rtol * max(Jmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jtps[j]), atol = rtol * max(Jmin, 1.0))
         end
         tmpjtv = jtprod!(nlps[i], x, w, tmp_n)
-        @test isapprox(Jtps[i], tmp_n, atol=rtol * max(Jmin, 1.0))
-        @test isapprox(tmpjtv, tmp_n, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(tmpjtv, tmp_n, atol = rtol * max(Jmin, 1.0))
         fill!(tmp_n, 0)
         J = jac_op!(nlps[i], x, tmp_m, tmp_n)
         res = J' * w
-        @test isapprox(res, Jtps[i], atol=rtol * max(Jmin, 1.0))
-        @test isapprox(res, tmp_n, atol=rtol * max(Jmin, 1.0))
+        @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_n, atol = rtol * max(Jmin, 1.0))
 
         if !(jac_coord in exclude)
           rows, cols = jac_structure(nlps[i])
           vals = jac_coord(nlps[i], x)
           jtprod!(nlps[i], rows, cols, vals, w, tmp_n)
-          @test isapprox(Jtps[i], tmp_n, atol=rtol * max(Jmin, 1.0))
+          @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
           jtprod!(nlps[i], x, rows, cols, w, tmp_n)
-          @test isapprox(Jtps[i], tmp_n, atol=rtol * max(Jmin, 1.0))
+          @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
 
           J = jac_op!(nlps[i], x, rows, cols, tmp_m, tmp_n)
           res = J' * w
-          @test isapprox(res, Jtps[i], atol=rtol * max(Jmin, 1.0))
+          @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
         end
       end
     end
@@ -378,18 +378,18 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       end
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
-        V = hess_coord(nlps[i], x, 0*y, obj_weight=0.0)
+        V = hess_coord(nlps[i], x, 0 * y, obj_weight = 0.0)
         @test norm(V) ≈ 0
         σ = 3.14
-        V = hess_coord(nlps[i], x, σ*y, obj_weight=σ)
+        V = hess_coord(nlps[i], x, σ * y, obj_weight = σ)
         I, J = hess_structure(nlps[i])
         tmp_h = sparse(I, J, V, n, n)
-        @test isapprox(σ*Ls[i], tmp_h, atol=rtol * max(Lmin, 1.0))
+        @test isapprox(σ * Ls[i], tmp_h, atol = rtol * max(Lmin, 1.0))
         tmp_V = zeros(nlps[i].meta.nnzh)
-        hess_coord!(nlps[i], x, σ*y, tmp_V, obj_weight=σ)
+        hess_coord!(nlps[i], x, σ * y, tmp_V, obj_weight = σ)
         @test tmp_V == V
       end
     end
@@ -398,22 +398,22 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       Ls = Any[hess(nlp, x, y) for nlp in nlps]
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
-        tmp_nn = hess(nlps[i], x, 0*y, obj_weight = 0.0)
+        tmp_nn = hess(nlps[i], x, 0 * y, obj_weight = 0.0)
         @test norm(tmp_nn) ≈ 0
         σ = 3.14
-        tmp_nn = hess(nlps[i], x, σ*y, obj_weight = σ)
-        @test isapprox(σ*Ls[i], tmp_nn, atol=rtol * max(Hmin, 1.0))
+        tmp_nn = hess(nlps[i], x, σ * y, obj_weight = σ)
+        @test isapprox(σ * Ls[i], tmp_nn, atol = rtol * max(Hmin, 1.0))
       end
     end
 
     if intersect([hess, hess_coord], exclude) == []
       for i = 1:N
         nlp = nlps[i]
-        Hx = hess(nlp, x, y, obj_weight=0.5)
-        V = hess_coord(nlp, x, y, obj_weight=0.5)
+        Hx = hess(nlp, x, y, obj_weight = 0.5)
+        V = hess_coord(nlp, x, y, obj_weight = 0.5)
         I, J = hess_structure(nlp)
         @test length(I) == length(J) == length(V) == nlp.meta.nnzh
         @test sparse(I, J, V, n, n) == Hx
@@ -421,30 +421,30 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
     end
 
     if !(hprod in exclude)
-      for σ = [1.0; 0.5; 0.0]
-        Lps = Any[hprod(nlp, x, y, v, obj_weight=σ) for nlp in nlps]
-        Hopvs = Any[hess_op(nlp, x, y, obj_weight=σ) * v for nlp in nlps]
+      for σ in [1.0; 0.5; 0.0]
+        Lps = Any[hprod(nlp, x, y, v, obj_weight = σ) for nlp in nlps]
+        Hopvs = Any[hess_op(nlp, x, y, obj_weight = σ) * v for nlp in nlps]
         Lpmin = minimum(map(norm, Lps))
         for i = 1:N
-          for j = i+1:N
-            @test isapprox(Lps[i], Lps[j], atol=rtol * max(Lpmin, 1.0))
-            @test isapprox(Lps[i], Hopvs[j], atol=rtol * max(Lpmin, 1.0))
+          for j = (i + 1):N
+            @test isapprox(Lps[i], Lps[j], atol = rtol * max(Lpmin, 1.0))
+            @test isapprox(Lps[i], Hopvs[j], atol = rtol * max(Lpmin, 1.0))
           end
 
           if !(hess_coord in exclude)
             rows, cols = hess_structure(nlps[i])
-            vals = hess_coord(nlps[i], x, y, obj_weight=σ)
+            vals = hess_coord(nlps[i], x, y, obj_weight = σ)
             hprod!(nlps[i], rows, cols, vals, v, tmp_n)
-            @test isapprox(Lps[i], tmp_n, atol=rtol * max(Lpmin, 1.0))
-            hprod!(nlps[i], x, y, rows, cols, v, tmp_n, obj_weight=σ)
-            @test isapprox(Lps[i], tmp_n, atol=rtol * max(Lpmin, 1.0))
+            @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
+            hprod!(nlps[i], x, y, rows, cols, v, tmp_n, obj_weight = σ)
+            @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
 
-            H = hess_op!(nlps[i], x, y, rows, cols, tmp_n, obj_weight=σ)
+            H = hess_op!(nlps[i], x, y, rows, cols, tmp_n, obj_weight = σ)
             res = H * v
-            @test isapprox(Lps[i], res, atol=rtol * max(Lpmin, 1.0))
-            H = hess_op!(nlps[i], x, y, tmp_n, obj_weight=σ)
+            @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
+            H = hess_op!(nlps[i], x, y, tmp_n, obj_weight = σ)
             res = H * v
-            @test isapprox(Lps[i], res, atol=rtol * max(Lpmin, 1.0))
+            @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
           end
         end
       end
@@ -456,11 +456,10 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       Ls = Any[ghjvprod(nlp, x, g, v) for nlp in nlps]
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
       end
     end
   end
-
 end

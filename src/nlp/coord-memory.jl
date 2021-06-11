@@ -6,7 +6,7 @@ export coord_memory_nlp
 Check that the allocated memory for in place coord methods is
 sufficiently smaller than their allocating counter parts.
 """
-function coord_memory_nlp(nlp :: AbstractNLPModel; exclude = [])
+function coord_memory_nlp(nlp::AbstractNLPModel; exclude = [])
   n = nlp.meta.nvar
   m = nlp.meta.ncon
 

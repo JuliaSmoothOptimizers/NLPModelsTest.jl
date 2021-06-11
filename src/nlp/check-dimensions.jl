@@ -12,8 +12,8 @@ function check_nlp_dimensions(nlp; exclude = [ghjvprod])
   n, m = nlp.meta.nvar, nlp.meta.ncon
   nnzh, nnzj = nlp.meta.nnzh, nlp.meta.nnzj
 
-  x, badx   = nlp.meta.x0, zeros(n + 1)
-  v, badv   = ones(n), zeros(n + 1)
+  x, badx = nlp.meta.x0, zeros(n + 1)
+  v, badv = ones(n), zeros(n + 1)
   Hv, badHv = zeros(n), zeros(n + 1)
   hrows, badhrows = zeros(Int, nnzh), zeros(Int, nnzh + 1)
   hcols, badhcols = zeros(Int, nnzh), zeros(Int, nnzh + 1)
@@ -53,9 +53,9 @@ function check_nlp_dimensions(nlp; exclude = [ghjvprod])
   end
 
   if m > 0
-    y, bady     = nlp.meta.y0, zeros(m + 1)
-    w, badw     = ones(m), zeros(m + 1)
-    Jv, badJv   = zeros(m), zeros(m + 1)
+    y, bady = nlp.meta.y0, zeros(m + 1)
+    w, badw = ones(m), zeros(m + 1)
+    Jv, badJv = zeros(m), zeros(m + 1)
     Jtw, badJtw = zeros(n), zeros(n + 1)
     jrows, badjrows = zeros(Int, nnzj), zeros(Int, nnzj + 1)
     jcols, badjcols = zeros(Int, nnzj), zeros(Int, nnzj + 1)

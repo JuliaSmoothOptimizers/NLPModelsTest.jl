@@ -16,33 +16,33 @@ export LINSV
 Starting point: `[0; 0]`.
 """
 mutable struct LINSV{T, S} <: AbstractNLPModel{T, S}
-  meta :: NLPModelMeta{T, S}
-  counters :: Counters
+  meta::NLPModelMeta{T, S}
+  counters::Counters
 end
 
-function LINSV(::Type{T}) where T
+function LINSV(::Type{T}) where {T}
   meta = NLPModelMeta{T, Vector{T}}(
     2,
-    nnzh=0,
-    nnzj=3,
-    ncon=2,
-    x0=zeros(T, 2),
-    lcon=T[3; 1],
-    ucon=T[Inf; Inf],
-    name="LINSV_manual",
+    nnzh = 0,
+    nnzj = 3,
+    ncon = 2,
+    x0 = zeros(T, 2),
+    lcon = T[3; 1],
+    ucon = T[Inf; Inf],
+    name = "LINSV_manual",
   )
 
   return LINSV(meta, Counters())
 end
 LINSV() = LINSV(Float64)
 
-function NLPModels.obj(nlp :: LINSV, x :: AbstractVector)
+function NLPModels.obj(nlp::LINSV, x::AbstractVector)
   @lencheck 2 x
   increment!(nlp, :neval_obj)
   return x[1]
 end
 
-function NLPModels.grad!(nlp :: LINSV, x :: AbstractVector, gx :: AbstractVector)
+function NLPModels.grad!(nlp::LINSV, x::AbstractVector, gx::AbstractVector)
   @lencheck 2 x gx
   increment!(nlp, :neval_grad)
   gx[1] = 1
@@ -50,54 +50,72 @@ function NLPModels.grad!(nlp :: LINSV, x :: AbstractVector, gx :: AbstractVector
   return gx
 end
 
-function NLPModels.hess(nlp :: LINSV, x :: AbstractVector{T}; obj_weight=one(T)) where T
+function NLPModels.hess(nlp::LINSV, x::AbstractVector{T}; obj_weight = one(T)) where {T}
   @lencheck 2 x
   increment!(nlp, :neval_hess)
   H = zeros(T, 2, 2)
   return H
 end
 
-function NLPModels.hess_structure!(nlp :: LINSV, rows :: AbstractVector{Int}, cols :: AbstractVector{Int})
+function NLPModels.hess_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 0 rows cols
   return rows, cols
 end
 
-function NLPModels.hess_coord!(nlp :: LINSV, x :: AbstractVector{T}, vals :: AbstractVector{T}; obj_weight=one(T)) where T
+function NLPModels.hess_coord!(
+  nlp::LINSV,
+  x::AbstractVector{T},
+  vals::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
   @lencheck 2 x
   @lencheck 0 vals
   increment!(nlp, :neval_hess)
   return vals
 end
 
-function NLPModels.hess_coord!(nlp :: LINSV, x :: AbstractVector{T}, y :: AbstractVector{T}, vals :: AbstractVector{T}; obj_weight=one(T)) where T
+function NLPModels.hess_coord!(
+  nlp::LINSV,
+  x::AbstractVector{T},
+  y::AbstractVector{T},
+  vals::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
   @lencheck 2 x y
   @lencheck 0 vals
   increment!(nlp, :neval_hess)
   return vals
 end
 
-function NLPModels.hprod!(nlp :: LINSV, x :: AbstractVector{T}, y :: AbstractVector{T}, v :: AbstractVector{T}, Hv :: AbstractVector{T}; obj_weight=one(T)) where T
+function NLPModels.hprod!(
+  nlp::LINSV,
+  x::AbstractVector{T},
+  y::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
   @lencheck 2 x y v Hv
   increment!(nlp, :neval_hprod)
   Hv .= 0
   return Hv
 end
 
-function NLPModels.cons!(nlp :: LINSV, x :: AbstractVector, cx :: AbstractVector)
+function NLPModels.cons!(nlp::LINSV, x::AbstractVector, cx::AbstractVector)
   @lencheck 2 x cx
   increment!(nlp, :neval_cons)
   cx .= [x[1] + x[2]; x[2]]
   return cx
 end
 
-function NLPModels.jac_structure!(nlp :: LINSV, rows :: AbstractVector{Int}, cols :: AbstractVector{Int})
+function NLPModels.jac_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 3 rows cols
-  rows .= [1,  1,  2]
-  cols .= [1,  2,  2]
+  rows .= [1, 1, 2]
+  cols .= [1, 2, 2]
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nlp :: LINSV, x :: AbstractVector, vals :: AbstractVector)
+function NLPModels.jac_coord!(nlp::LINSV, x::AbstractVector, vals::AbstractVector)
   @lencheck 2 x
   @lencheck 3 vals
   increment!(nlp, :neval_jac)
@@ -105,7 +123,7 @@ function NLPModels.jac_coord!(nlp :: LINSV, x :: AbstractVector, vals :: Abstrac
   return vals
 end
 
-function NLPModels.jprod!(nlp :: LINSV, x :: AbstractVector, v :: AbstractVector, Jv :: AbstractVector)
+function NLPModels.jprod!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
   @lencheck 2 x v Jv
   increment!(nlp, :neval_jprod)
   Jv[1] = v[1] + v[2]
@@ -113,7 +131,7 @@ function NLPModels.jprod!(nlp :: LINSV, x :: AbstractVector, v :: AbstractVector
   return Jv
 end
 
-function NLPModels.jtprod!(nlp :: LINSV, x :: AbstractVector, v :: AbstractVector, Jtv :: AbstractVector)
+function NLPModels.jtprod!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
   @lencheck 2 x v Jtv
   increment!(nlp, :neval_jtprod)
   Jtv[1] = v[1]
@@ -121,7 +139,13 @@ function NLPModels.jtprod!(nlp :: LINSV, x :: AbstractVector, v :: AbstractVecto
   return Jtv
 end
 
-function NLPModels.ghjvprod!(nlp :: LINSV, x :: AbstractVector{T}, g :: AbstractVector{T}, v :: AbstractVector{T}, gHv :: AbstractVector{T}) where T
+function NLPModels.ghjvprod!(
+  nlp::LINSV,
+  x::AbstractVector{T},
+  g::AbstractVector{T},
+  v::AbstractVector{T},
+  gHv::AbstractVector{T},
+) where {T}
   @lencheck nlp.meta.nvar x g v
   @lencheck nlp.meta.ncon gHv
   increment!(nlp, :neval_hprod)

@@ -16,44 +16,44 @@ export HS5
 Starting point: `[0.0; 0.0]`.
 """
 mutable struct HS5{T, S} <: AbstractNLPModel{T, S}
-  meta :: NLPModelMeta{T, S}
-  counters :: Counters
+  meta::NLPModelMeta{T, S}
+  counters::Counters
 end
 
-function HS5(::Type{T}) where T
+function HS5(::Type{T}) where {T}
   meta = NLPModelMeta{T, Vector{T}}(
     2,
-    x0=zeros(T, 2),
-    lvar=T[-1.5; -3],
-    uvar=T[4; 3],
-    name="HS5_manual",
+    x0 = zeros(T, 2),
+    lvar = T[-1.5; -3],
+    uvar = T[4; 3],
+    name = "HS5_manual",
   )
 
   return HS5(meta, Counters())
 end
 HS5() = HS5(Float64)
 
-function NLPModels.obj(nlp :: HS5, x :: AbstractVector)
+function NLPModels.obj(nlp::HS5, x::AbstractVector)
   @lencheck 2 x
   increment!(nlp, :neval_obj)
   return sin(x[1] + x[2]) + (x[1] - x[2])^2 - 3x[1] / 2 + 5x[2] / 2 + 1
 end
 
-function NLPModels.grad!(nlp :: HS5, x :: AbstractVector{T}, gx :: AbstractVector{T}) where T
+function NLPModels.grad!(nlp::HS5, x::AbstractVector{T}, gx::AbstractVector{T}) where {T}
   @lencheck 2 x gx
   increment!(nlp, :neval_grad)
   gx .= cos(x[1] + x[2]) * ones(T, 2) + 2 * (x[1] - x[2]) * T[1; -1] + T[-1.5; 2.5]
   return gx
 end
 
-function NLPModels.hess_structure!(nlp :: HS5, rows :: AbstractVector{Int}, cols :: AbstractVector{Int})
+function NLPModels.hess_structure!(nlp::HS5, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 3 rows cols
   rows .= [1; 2; 2]
   cols .= [1; 1; 2]
   return rows, cols
 end
 
-function NLPModels.hess_coord!(nlp :: HS5, x :: AbstractVector, vals :: AbstractVector; obj_weight=1.0)
+function NLPModels.hess_coord!(nlp::HS5, x::AbstractVector, vals::AbstractVector; obj_weight = 1.0)
   @lencheck 2 x
   @lencheck 3 vals
   increment!(nlp, :neval_hess)
@@ -63,9 +63,16 @@ function NLPModels.hess_coord!(nlp :: HS5, x :: AbstractVector, vals :: Abstract
   return vals
 end
 
-function NLPModels.hprod!(nlp :: HS5, x :: AbstractVector{T}, v :: AbstractVector{T}, Hv :: AbstractVector{T}; obj_weight=one(T)) where T
+function NLPModels.hprod!(
+  nlp::HS5,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
   @lencheck 2 x v Hv
   increment!(nlp, :neval_hprod)
-  Hv .= (- sin(x[1] + x[2]) * (v[1] + v[2]) * ones(T, 2) + 2 * [v[1] - v[2]; v[2] - v[1]]) * obj_weight
+  Hv .=
+    (-sin(x[1] + x[2]) * (v[1] + v[2]) * ones(T, 2) + 2 * [v[1] - v[2]; v[2] - v[1]]) * obj_weight
   return Hv
 end

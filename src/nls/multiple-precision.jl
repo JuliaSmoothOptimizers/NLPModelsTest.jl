@@ -9,9 +9,11 @@ In other words, make sure that the model handles multiple precisions.
 The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
-function multiple_precision_nls(nls :: AbstractNLSModel;
-                                precisions :: Array = [Float16, Float32, Float64, BigFloat],
-                                exclude = [])
+function multiple_precision_nls(
+  nls::AbstractNLSModel;
+  precisions::Array = [Float16, Float32, Float64, BigFloat],
+  exclude = [],
+)
   for T in precisions
     x = ones(T, nls.meta.nvar)
     @test residual ∈ exclude || eltype(residual(nls, x)) == T
@@ -27,7 +29,7 @@ function multiple_precision_nls(nls :: AbstractNLSModel;
     end
     @test hess_residual ∈ exclude || eltype(hess_residual(nls, x, ones(T, nls.nls_meta.nequ))) == T
     if hess_op_residual ∉ exclude
-      for i = 1:nls.nls_meta.nequ
+      for i = 1:(nls.nls_meta.nequ)
         @test eltype(hess_op_residual(nls, x, i)) == T
       end
     end
