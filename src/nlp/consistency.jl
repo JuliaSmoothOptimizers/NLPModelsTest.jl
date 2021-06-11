@@ -409,7 +409,8 @@ function consistent_functions(nlps; rtol=1.0e-8, exclude=[])
       end
     end
 
-    if intersect([hess, hess_coord], exclude) == [] for i = 1:N
+    if intersect([hess, hess_coord], exclude) == []
+      for i = 1:N
         nlp = nlps[i]
         Hx = hess(nlp, x, y, obj_weight=0.5)
         V = hess_coord(nlp, x, y, obj_weight=0.5)
