@@ -50,13 +50,6 @@ function NLPModels.grad!(nlp::LINSV, x::AbstractVector, gx::AbstractVector)
   return gx
 end
 
-function NLPModels.hess(nlp::LINSV, x::AbstractVector{T}; obj_weight = one(T)) where {T}
-  @lencheck 2 x
-  increment!(nlp, :neval_hess)
-  H = zeros(T, 2, 2)
-  return H
-end
-
 function NLPModels.hess_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 0 rows cols
   return rows, cols

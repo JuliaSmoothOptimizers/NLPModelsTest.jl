@@ -1,5 +1,7 @@
 export BROWNDEN
 
+using LinearAlgebra
+
 """
     nlp = BROWNDEN()
 
@@ -68,7 +70,7 @@ function NLPModels.hess(nlp::BROWNDEN, x::AbstractVector{T}; obj_weight = 1.0) w
     θi = αi^2 + βi^2
     Hx += (4vi * vi' + 4wi * wi') * θi + 8zi * zi'
   end
-  return T(obj_weight) * tril(Hx)
+  return Symmetric(T(obj_weight) * Hx, :L)
 end
 
 function NLPModels.hess_structure!(

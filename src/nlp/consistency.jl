@@ -174,6 +174,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       for j = (i + 1):N
         @test isapprox(Hs[i], Hs[j], atol = rtol * max(Hmin, 1.0))
       end
+      @test Hs[i] isa Symmetric
       tmp_nn = hess(nlps[i], x, obj_weight = 0.0)
       @test norm(tmp_nn) ≈ 0
       σ = 3.14
@@ -233,7 +234,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       V = hess_coord(nlp, x, obj_weight = 0.5)
       I, J = hess_structure(nlp)
       @test length(I) == length(J) == length(V) == nlp.meta.nnzh
-      @test sparse(I, J, V, n, n) == Hx
+      @test Symmetric(sparse(I, J, V, n, n), :L) == Hx
     end
   end
 
@@ -401,6 +402,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
         for j = (i + 1):N
           @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
+        @test Ls[i] isa Symmetric
         tmp_nn = hess(nlps[i], x, 0 * y, obj_weight = 0.0)
         @test norm(tmp_nn) ≈ 0
         σ = 3.14
@@ -416,7 +418,7 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
         V = hess_coord(nlp, x, y, obj_weight = 0.5)
         I, J = hess_structure(nlp)
         @test length(I) == length(J) == length(V) == nlp.meta.nnzh
-        @test sparse(I, J, V, n, n) == Hx
+        @test Symmetric(sparse(I, J, V, n, n), :L) == Hx
       end
     end
 
