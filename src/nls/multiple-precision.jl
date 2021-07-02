@@ -10,11 +10,12 @@ The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nls(
-  nls::AbstractNLSModel;
+  p::AbstractString;
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [],
 )
   for T in precisions
+    nls = eval(Symbol(p))(T)
     x = ones(T, nls.meta.nvar)
     @test residual ∈ exclude || eltype(residual(nls, x)) == T
     @test jac_residual ∈ exclude || eltype(jac_residual(nls, x)) == T
