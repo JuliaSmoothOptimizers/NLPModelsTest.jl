@@ -37,6 +37,7 @@ function LLS(::Type{T}) where {T}
     lcon = T[0.0],
     ucon = T[Inf],
     nnzj = 2,
+    nnzh = 2,
   )
   nls_meta = NLSMeta{T, Vector{T}}(3, 2, nnzj = 5, nnzh = 0)
 
@@ -176,32 +177,17 @@ function NLPModels.jtprod!(nls::LLS, x::AbstractVector, v::AbstractVector, Jtv::
   return Jtv
 end
 
-function NLPModels.hess(nls::LLS, x::AbstractVector{T}; obj_weight = 1.0) where {T}
-  @lencheck 2 x
-  increment!(nls, :neval_hess)
-  return obj_weight * [2.0 0.0; 0.0 3.0]
-end
-
 function NLPModels.hess_structure!(nls::LLS, rows::AbstractVector{Int}, cols::AbstractVector{Int})
-  @lencheck 3 rows cols
-  n = nls.meta.nvar
-  I = ((i, j) for i = 1:n, j = 1:n if i ≥ j)
-  rows .= getindex.(I, 1)
-  cols .= getindex.(I, 2)
+  @lencheck 2 rows cols
+  rows .= [1, 2]
+  cols .= [1, 2]
   return rows, cols
 end
 
-function NLPModels.hess_coord!(nls::LLS, x::AbstractVector, vals::AbstractVector; obj_weight = 1.0)
+function NLPModels.hess_coord!(nls::LLS{T, S}, x::AbstractVector{T}, vals::AbstractVector; obj_weight :: T = one(T)) where {T, S}
   @lencheck 2 x
-  @lencheck 3 vals
-  Hx = hess(nls, x, obj_weight = obj_weight)
-  k = 1
-  for j = 1:2
-    for i = j:2
-      vals[k] = Hx[i, j]
-      k += 1
-    end
-  end
+  @lencheck 2 vals
+  vals .= [2obj_weight; 3obj_weight]
   return vals
 end
 

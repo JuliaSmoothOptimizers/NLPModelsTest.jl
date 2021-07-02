@@ -216,22 +216,17 @@ function NLPModels.jtprod!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jtv
   return Jtv
 end
 
-function NLPModels.hess(nls::NLSLC, x::AbstractVector{T}; obj_weight = 1.0) where {T}
+function NLPModels.hess(nls :: NLSLC, x :: AbstractVector{T}; obj_weight=1.0) where T
   @lencheck 15 x
   increment!(nls, :neval_hess)
-  return obj_weight * diagm(0 => [6 * x[i]^2 - 2 * i^2 for i = 1:15])
+  return Symmetric(obj_weight * diagm(0 => [6*x[i]^2-2*i^2 for i=1:15]), :L)
 end
 
-function NLPModels.hess(
-  nls::NLSLC,
-  x::AbstractVector{T},
-  y::AbstractVector{T};
-  obj_weight = 1.0,
-) where {T}
+function NLPModels.hess(nls :: NLSLC, x :: AbstractVector{T}, y :: AbstractVector{T}; obj_weight=1.0) where T
   @lencheck 15 x
   @lencheck 11 y
   increment!(nls, :neval_hess)
-  return hess(nls, x, obj_weight = obj_weight)
+  return Symmetric(hess(nls, x, obj_weight=obj_weight), :L)
 end
 
 function NLPModels.hess_structure!(nls::NLSLC, rows::AbstractVector{Int}, cols::AbstractVector{Int})

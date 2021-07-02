@@ -178,7 +178,7 @@ function consistent_nls_functions(nlss; rtol = 1.0e-8, exclude = [])
         V = hess_coord_residual(nlss[i], x, w)
         I, J = hess_structure_residual(nlss[i])
         @test length(I) == length(J) == length(V) == nlss[i].nls_meta.nnzh
-        @test sparse(I, J, V, n, n) == Hs[i]
+        @test Symmetric(sparse(I, J, V, n, n), :L) == Hs[i]
         I2, J2 = copy(I), copy(J)
         hess_structure_residual!(nlss[i], I2, J2)
         @test I == I2
