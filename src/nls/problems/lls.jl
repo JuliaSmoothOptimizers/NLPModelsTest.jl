@@ -184,7 +184,12 @@ function NLPModels.hess_structure!(nls::LLS, rows::AbstractVector{Int}, cols::Ab
   return rows, cols
 end
 
-function NLPModels.hess_coord!(nls::LLS{T, S}, x::AbstractVector{T}, vals::AbstractVector; obj_weight :: T = one(T)) where {T, S}
+function NLPModels.hess_coord!(
+  nls::LLS{T, S},
+  x::AbstractVector{T},
+  vals::AbstractVector;
+  obj_weight::T = one(T),
+) where {T, S}
   @lencheck 2 x
   @lencheck 2 vals
   vals .= [2obj_weight; 3obj_weight]
