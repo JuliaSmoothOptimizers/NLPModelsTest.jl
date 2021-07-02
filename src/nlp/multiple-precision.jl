@@ -10,11 +10,12 @@ The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nlp(
-  nlp::AbstractNLPModel;
+  p::AbstractString;
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [ghjvprod],
 )
   for T in precisions
+    nlp = eval(Symbol(p))(T)
     x = ones(T, nlp.meta.nvar)
     @test obj ∈ exclude || typeof(obj(nlp, x)) == T
     @test grad ∈ exclude || eltype(grad(nlp, x)) == T

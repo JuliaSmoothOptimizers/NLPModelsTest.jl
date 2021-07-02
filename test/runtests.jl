@@ -15,7 +15,7 @@ addprocs(np - 1)
       check_nlp_dimensions(nlp, exclude = [])
     end
     @testset "Multiple precision support of problem $p" begin
-      multiple_precision_nlp(nlp, exclude = [])
+      multiple_precision_nlp(p, exclude = [])
     end
     @testset "View subarray of problem $p" begin
       view_subarray_nlp(nlp, exclude = [])
@@ -37,7 +37,7 @@ end
       check_nls_dimensions(nls, exclude = exclude)
     end
     @testset "Multiple precision support of problem $p" begin
-      multiple_precision_nls(nls, exclude = exclude)
+      multiple_precision_nls(p, exclude = exclude)
     end
     @testset "View subarray of problem $p" begin
       view_subarray_nls(nls, exclude = exclude)
