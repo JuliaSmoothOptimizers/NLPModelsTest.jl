@@ -245,7 +245,7 @@ function NLPModels.jth_hess_coord!(
   j :: Integer,
   vals :: AbstractVector{T}
 ) where {T}
-  @lencheck 3 vals
+  @lencheck 2 vals
   @lencheck 2 x
   @rangecheck 1 1 j
   NLPModels.increment!(nls, :neval_jhess)
