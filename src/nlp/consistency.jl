@@ -44,7 +44,10 @@ function consistent_nlps(
       [LBFGSModel(nlp) for nlp in nlps]
       [LSR1Model(nlp) for nlp in nlps]
     ]
-    consistent_functions([nlps; qnmodels], exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude)
+    consistent_functions(
+      [nlps; qnmodels],
+      exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
+    )
     consistent_counters([nlps; qnmodels])
   end
 
@@ -461,8 +464,8 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       end
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
       end
     end
@@ -471,13 +474,13 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       Ls = [jth_hess(nlp, x, m) for nlp in nlps]
       Lmin = minimum(map(norm, Ls))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Ls[i], Ls[j], atol=rtol * max(Lmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Ls[i], Ls[j], atol = rtol * max(Lmin, 1.0))
         end
       end
     end
 
-    if intersect([jth_hess, jth_hess_coord], exclude) == [] 
+    if intersect([jth_hess, jth_hess_coord], exclude) == []
       for i = 1:N
         nlp = nlps[i]
         Hx = jth_hess(nlp, x, 1)
@@ -489,19 +492,19 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
     end
 
     if intersect([jth_hess, jth_hprod], exclude) == []
-      Lps = [jth_hprod(nlp, x, v, max(m-1, 1)) for nlp in nlps]
+      Lps = [jth_hprod(nlp, x, v, max(m - 1, 1)) for nlp in nlps]
       Lpmin = minimum(map(norm, Lps))
       for i = 1:N
-        for j = i+1:N
-          @test isapprox(Lps[i], Lps[j], atol=rtol * max(Lpmin, 1.0))
+        for j = (i + 1):N
+          @test isapprox(Lps[i], Lps[j], atol = rtol * max(Lpmin, 1.0))
         end
 
         if !(jth_hess_coord in exclude)
           rows, cols = hess_structure(nlps[i])
-          vals = jth_hess_coord(nlps[i], x, max(m-1, 1))
+          vals = jth_hess_coord(nlps[i], x, max(m - 1, 1))
           tmp_n = similar(Lps[i])
           coo_sym_prod!(rows, cols, vals, v, tmp_n)
-          @test isapprox(Lps[i], tmp_n, atol=rtol * max(Lpmin, 1.0))
+          @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
         end
       end
     end
@@ -518,12 +521,12 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       end
     end
 
-    if intersect([ghjvprod, jth_hprod], exclude) == []  
+    if intersect([ghjvprod, jth_hprod], exclude) == []
       for i = 1:N
         nlp = nlps[i]
         gHjv = ghjvprod(nlp, x, g, v)
-        tmp_ghjv = [dot(g, jth_hprod(nlp, x, v, j)) for j=1:m]
-        @test isapprox(gHjv, tmp_ghjv, atol=rtol * max(norm(gHjv), 1.0))
+        tmp_ghjv = [dot(g, jth_hprod(nlp, x, v, j)) for j = 1:m]
+        @test isapprox(gHjv, tmp_ghjv, atol = rtol * max(norm(gHjv), 1.0))
       end
     end
   end

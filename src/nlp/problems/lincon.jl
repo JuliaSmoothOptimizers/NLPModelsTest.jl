@@ -182,11 +182,11 @@ function NLPModels.jtprod!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jt
 end
 
 function NLPModels.jth_hprod!(
-  nlp :: LINCON,
-  x :: AbstractVector{T},
-  v :: AbstractVector{T},
-  j :: Integer,
-  Hv :: AbstractVector{T}
+  nlp::LINCON,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  j::Integer,
+  Hv::AbstractVector{T},
 ) where {T}
   @lencheck 15 x v Hv
   @rangecheck 1 11 j
@@ -196,10 +196,10 @@ function NLPModels.jth_hprod!(
 end
 
 function NLPModels.jth_hess_coord!(
-  nlp :: LINCON,
-  x :: AbstractVector{T},
-  j :: Integer,
-  vals :: AbstractVector{T}
+  nlp::LINCON,
+  x::AbstractVector{T},
+  j::Integer,
+  vals::AbstractVector{T},
 ) where {T}
   @lencheck 15 vals
   @lencheck 15 x

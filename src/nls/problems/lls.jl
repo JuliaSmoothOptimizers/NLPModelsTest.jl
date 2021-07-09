@@ -226,11 +226,11 @@ function NLPModels.hprod!(
 end
 
 function NLPModels.jth_hprod!(
-  nls :: LLS,
-  x :: AbstractVector{T},
-  v :: AbstractVector{T},
-  j :: Integer,
-  Hv :: AbstractVector{T}
+  nls::LLS,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  j::Integer,
+  Hv::AbstractVector{T},
 ) where {T}
   @lencheck 2 x v Hv
   @rangecheck 1 1 j
@@ -240,10 +240,10 @@ function NLPModels.jth_hprod!(
 end
 
 function NLPModels.jth_hess_coord!(
-  nls :: LLS,
-  x :: AbstractVector{T},
-  j :: Integer,
-  vals :: AbstractVector{T}
+  nls::LLS,
+  x::AbstractVector{T},
+  j::Integer,
+  vals::AbstractVector{T},
 ) where {T}
   @lencheck 2 vals
   @lencheck 2 x

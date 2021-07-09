@@ -137,39 +137,39 @@ function NLPModels.jtprod!(nlp::HS14, x::AbstractVector, v::AbstractVector, Jtv:
 end
 
 function NLPModels.jth_hprod!(
-  nlp :: HS14,
-  x :: AbstractVector{T},
-  v :: AbstractVector{T},
-  j :: Integer,
-  Hv :: AbstractVector{T}
+  nlp::HS14,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  j::Integer,
+  Hv::AbstractVector{T},
 ) where {T}
   @lencheck 2 x v Hv
   @rangecheck 1 2 j
   NLPModels.increment!(nlp, :neval_jhprod)
   if j == 1
-      Hv .= zero(T)
+    Hv .= zero(T)
   elseif j == 2
-      Hv[1] = -v[1] / 2
-      Hv[2] = -2v[2]
+    Hv[1] = -v[1] / 2
+    Hv[2] = -2v[2]
   end
   return Hv
 end
 
 function NLPModels.jth_hess_coord!(
-  nlp :: HS14,
-  x :: AbstractVector{T},
-  j :: Integer,
-  vals :: AbstractVector{T}
+  nlp::HS14,
+  x::AbstractVector{T},
+  j::Integer,
+  vals::AbstractVector{T},
 ) where {T}
   @lencheck 2 vals
   @lencheck 2 x
   @rangecheck 1 2 j
   NLPModels.increment!(nlp, :neval_jhess)
   if j == 1
-      vals .= zero(T)
+    vals .= zero(T)
   elseif j == 2
-      vals[1] = T(-1 / 2)
-      vals[2] = T(-2)
+    vals[1] = T(-1 / 2)
+    vals[2] = T(-2)
   end
   return vals
 end

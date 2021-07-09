@@ -140,12 +140,12 @@ function NLPModels.hprod!(
 end
 
 function NLPModels.jth_hprod!(
-  nls :: MGH01Feas,
-  x :: AbstractVector{T},
-  v :: AbstractVector{T},
-  j :: Integer,
-  Hv :: AbstractVector{T}
-) where T
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  j::Integer,
+  Hv::AbstractVector{T},
+) where {T}
   @lencheck 2 x v Hv
   @rangecheck 1 2 j
   NLPModels.increment!(nls, :neval_jhprod)
@@ -158,10 +158,10 @@ function NLPModels.jth_hprod!(
 end
 
 function NLPModels.jth_hess_coord!(
-  nls :: MGH01Feas,
-  x :: AbstractVector{T},
-  j :: Integer,
-  vals :: AbstractVector{T}
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  j::Integer,
+  vals::AbstractVector{T},
 ) where {T}
   @lencheck 1 vals
   @lencheck 2 x
