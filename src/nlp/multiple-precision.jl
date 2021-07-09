@@ -12,7 +12,7 @@ Defaults to `[Float16, Float32, Float64, BigFloat]`.
 function multiple_precision_nlp(
   p::AbstractString;
   precisions::Array = [Float16, Float32, Float64, BigFloat],
-  exclude = [ghjvprod],
+  exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
 )
   for T in precisions
     nlp = eval(Symbol(p))(T)
@@ -51,6 +51,10 @@ function multiple_precision_nlp(
         Hv = zeros(T, nlp.meta.nvar)
         @test eltype(hess_op!(nlp, rows, cols, vals, Hv)) == T
       end
+      @test jth_hess ∈ exclude || eltype(jth_hess(nlp, x, 1)) == T
+      @test jth_hess_coord ∈ exclude || eltype(jth_hess_coord(nlp, x, 1)) == T
+      @test jth_hprod ∈ exclude || eltype(jth_hprod!(nlp, x, x, 1, Hv)) == T
+      @test jth_hprod ∈ exclude || eltype(jth_hprod(nlp, x, x, 1)) == T
       @test ghjvprod ∈ exclude || eltype(ghjvprod(nlp, x, x, x)) == T
     end
   end
