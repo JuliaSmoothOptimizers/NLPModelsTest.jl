@@ -22,7 +22,7 @@ jobs:
           "JuliaSmoothOptimizers/LLSModels.jl",
           "JuliaSmoothOptimizers/NLPModelsIpopt.jl",
           "JuliaSmoothOptimizers/NLPModelsJuMP.jl",
-          # "JuliaSmoothOptimizers/PDENLPModels.jl",
+          "JuliaSmoothOptimizers/PDENLPModels.jl",
           "JuliaSmoothOptimizers/Percival.jl",
           "JuliaSmoothOptimizers/QuadraticModels.jl",
           "JuliaSmoothOptimizers/SolverBenchmark.jl",
