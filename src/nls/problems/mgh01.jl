@@ -179,3 +179,39 @@ function NLPModels.hprod!(
   Hv .= obj_weight * [T(1) - 200 * x[2]+600 * x[1]^2 -200*x[1]; -200*x[1] T(100)] * v
   return Hv
 end
+
+function NLPModels.cons!(nls::MGH01, x::AbstractVector{T}, c) where {T}
+  @lencheck nls.meta.ncon c
+  increment!(nls, :neval_cons)
+  return c
+end
+function NLPModels.jac_structure!(
+  nls::MGH01,
+  rows::AbstractVector{T},
+  cols::AbstractVector{T},
+) where {T}
+  @lencheck nls.meta.nnzj rows cols
+  return rows, cols
+end
+function NLPModels.jac_coord!(nls::MGH01, x::AbstractVector{T}, vals) where {T}
+  @lencheck nls.meta.nnzj vals
+  increment!(nls, :neval_jac)
+  return vals
+end
+function NLPModels.jprod!(nls::MGH01, x::AbstractVector{T}, v, Jv) where {T}
+  @lencheck nls.meta.nvar v
+  @lencheck nls.meta.ncon Jv
+  increment!(nls, :neval_jprod)
+  return Jv
+end
+function NLPModels.jtprod!(nls::MGH01, x::AbstractVector{T}, v, Jtv) where {T}
+  @lencheck nls.meta.nvar Jtv
+  @lencheck nls.meta.ncon v
+  increment!(nls, :neval_jtprod)
+  fill!(Jtv, zero(T))
+  return Jtv
+end
+function NLPModels.hess_coord!(nls::MGH01, x, y, vals; obj_weight=1.0)
+  return hess_coord!(nls, x, vals; obj_weight=obj_weight)
+end
+NLPModels.hprod!(nls::MGH01, x, y, v, Hv; obj_weight=1.0) = hprod!(nls, x, v, Hv; obj_weight=obj_weight)
