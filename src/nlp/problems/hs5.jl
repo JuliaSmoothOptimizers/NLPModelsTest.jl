@@ -76,3 +76,39 @@ function NLPModels.hprod!(
     (-sin(x[1] + x[2]) * (v[1] + v[2]) * ones(T, 2) + 2 * [v[1] - v[2]; v[2] - v[1]]) * obj_weight
   return Hv
 end
+
+function NLPModels.cons!(nlp::HS5, x::AbstractVector{T}, c) where {T}
+  @lencheck nlp.meta.ncon c
+  increment!(nlp, :neval_cons)
+  return c
+end
+function NLPModels.jac_structure!(
+  nlp::HS5,
+  rows::AbstractVector{T},
+  cols::AbstractVector{T},
+) where {T}
+  @lencheck nlp.meta.nnzj rows cols
+  return rows, cols
+end
+function NLPModels.jac_coord!(nlp::HS5, x::AbstractVector{T}, vals) where {T}
+  @lencheck nlp.meta.nnzj vals
+  increment!(nlp, :neval_jac)
+  return vals
+end
+function NLPModels.jprod!(nlp::HS5, x::AbstractVector{T}, v, Jv) where {T}
+  @lencheck nlp.meta.nvar v
+  @lencheck nlp.meta.ncon Jv
+  increment!(nlp, :neval_jprod)
+  return Jv
+end
+function NLPModels.jtprod!(nlp::HS5, x::AbstractVector{T}, v, Jtv) where {T}
+  @lencheck nlp.meta.nvar Jtv
+  @lencheck nlp.meta.ncon v
+  increment!(nlp, :neval_jtprod)
+  fill!(Jtv, zero(T))
+  return Jtv
+end
+function NLPModels.hess_coord!(nlp::HS5, x, y, vals; obj_weight=1.0)
+  return hess_coord!(nlp, x, vals; obj_weight=obj_weight)
+end
+NLPModels.hprod!(nlp::HS5, x, y, v, Hv; obj_weight=1.0) = hprod!(nlp, x, v, Hv; obj_weight=obj_weight)
