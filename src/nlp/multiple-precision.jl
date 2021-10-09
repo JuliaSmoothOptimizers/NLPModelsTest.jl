@@ -1,21 +1,31 @@
 export multiple_precision_nlp
 
+function multiple_precision_nlp(
+  problem :: String;
+  kwargs...
+)
+  Base.depwarn("This function signature will be deprecated, see the help for the new signature", :multiple_precision_nlp)
+  nlp_from_T = eval(Symbol(problem))
+  multiple_precision_nlp(nlp_from_T; kwargs...)
+end
+
 """
-    multiple_precision_nlp(nlp; precisions=[...], exclude = [ghjvprod])
+    multiple_precision_nlp(nlp_from_T; precisions=[...], exclude = [ghjvprod])
 
 Check that the NLP API functions output type are the same as the input.
 In other words, make sure that the model handles multiple precisions.
 
+The input `nlp_from_T` is a function that returns an `nlp` from a type `T`.
 The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nlp(
-  p::AbstractString;
+  nlp_from_T;
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
 )
   for T in precisions
-    nlp = eval(Symbol(p))(T)
+    nlp = nlp_from_T(T)
     x = ones(T, nlp.meta.nvar)
     @test obj ∈ exclude || typeof(obj(nlp, x)) == T
     @test grad ∈ exclude || eltype(grad(nlp, x)) == T

@@ -7,7 +7,8 @@ addprocs(np - 1)
 
 @everywhere function nlp_tests(p)
   @testset "NLP tests of problem $p" begin
-    nlp = eval(Symbol(p))()
+    nlp_from_T = eval(Symbol(p))
+    nlp = nlp_from_T()
     @testset "Consistency of problem $p" begin
       consistent_nlps([nlp, nlp], exclude = [])
     end
@@ -15,7 +16,7 @@ addprocs(np - 1)
       check_nlp_dimensions(nlp, exclude = [])
     end
     @testset "Multiple precision support of problem $p" begin
-      multiple_precision_nlp(p, exclude = [])
+      multiple_precision_nlp(nlp_from_T, exclude = [])
     end
     @testset "View subarray of problem $p" begin
       view_subarray_nlp(nlp, exclude = [])
@@ -28,7 +29,8 @@ end
 
 @everywhere function nls_tests(p)
   @testset "NLS tests of problem $p" begin
-    nls = eval(Symbol(p))()
+    nls_from_T = eval(Symbol(p))
+    nls = nls_from_T()
     exclude = p == "LLS" ? [hess_coord, hess] : []
     @testset "Consistency of problem $p" begin
       consistent_nlss([nls, nls], exclude = exclude)
@@ -37,7 +39,7 @@ end
       check_nls_dimensions(nls, exclude = exclude)
     end
     @testset "Multiple precision support of problem $p" begin
-      multiple_precision_nls(p, exclude = exclude)
+      multiple_precision_nls(nls_from_T, exclude = exclude)
     end
     @testset "View subarray of problem $p" begin
       view_subarray_nls(nls, exclude = exclude)
