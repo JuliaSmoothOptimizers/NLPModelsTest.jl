@@ -1,21 +1,31 @@
 export multiple_precision_nls
 
+function multiple_precision_nls(
+  problem :: String;
+  kwargs...
+)
+  Base.depwarn("This function signature will be deprecated, see the help for the new signature", :multiple_precision_nls)
+  nls_from_T = eval(Symbol(problem))
+  multiple_precision_nls(nls_from_T; kwargs...)
+end
+
 """
-    multiple_precision_nls(nls; precisions=[...], exclude = [])
+    multiple_precision_nls(nls_from_T; precisions=[...], exclude = [])
 
 Check that the NLS API functions output type are the same as the input.
 In other words, make sure that the model handles multiple precisions.
 
+The input `nls_from_T` is a function that returns an `nls` from a type `T`.
 The array `precisions` are the tested floating point types.
 Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nls(
-  p::AbstractString;
+  nls_from_T;
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [],
 )
   for T in precisions
-    nls = eval(Symbol(p))(T)
+    nls = nls_from_T(T)
     x = ones(T, nls.meta.nvar)
     @test residual ∈ exclude || eltype(residual(nls, x)) == T
     @test jac_residual ∈ exclude || eltype(jac_residual(nls, x)) == T
