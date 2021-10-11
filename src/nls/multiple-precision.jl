@@ -1,10 +1,10 @@
 export multiple_precision_nls
 
-function multiple_precision_nls(
-  problem :: String;
-  kwargs...
-)
-  Base.depwarn("This function signature will be deprecated, see the help for the new signature", :multiple_precision_nls)
+function multiple_precision_nls(problem::String; kwargs...)
+  Base.depwarn(
+    "This function signature will be deprecated, see the help for the new signature",
+    :multiple_precision_nls,
+  )
   nls_from_T = eval(Symbol(problem))
   multiple_precision_nls(nls_from_T; kwargs...)
 end
