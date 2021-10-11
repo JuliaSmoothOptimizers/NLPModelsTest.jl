@@ -1,10 +1,10 @@
 export multiple_precision_nlp
 
-function multiple_precision_nlp(
-  problem :: String;
-  kwargs...
-)
-  Base.depwarn("This function signature will be deprecated, see the help for the new signature", :multiple_precision_nlp)
+function multiple_precision_nlp(problem::String; kwargs...)
+  Base.depwarn(
+    "This function signature will be deprecated, see the help for the new signature",
+    :multiple_precision_nlp,
+  )
   nlp_from_T = eval(Symbol(problem))
   multiple_precision_nlp(nlp_from_T; kwargs...)
 end
