@@ -2,14 +2,11 @@ export consistent_nlps
 
 """
     consistent_nlps(nlps; exclude=[], rtol=1e-8)
-
 Check that the all `nlp`s of the vector `nlps` are consistent, in the sense that
 - Their counters are the same.
 - Their `meta` information is the same.
 - The API functions return the same output given the same input.
-
 In other words, if you create two models of the same problem, they should be consistent.
-
 The keyword `exclude` can be used to pass functions to be ignored, if some of the models don't implement that function.
 """
 function consistent_nlps(
@@ -242,6 +239,12 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
           vals = hess_coord(nlps[i], x, obj_weight = σ)
           hprod!(nlps[i], rows, cols, vals, v, tmp_n)
           @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
+          hprod!(nlps[i], x, rows, cols, v, tmp_n, obj_weight = σ)
+          @test isapprox(Hvs[i], tmp_n, atol = rtol * max(Hvmin, 1.0))
+
+          H = hess_op!(nlps[i], x, rows, cols, tmp_n, obj_weight = σ)
+          res = H * v
+          @test isapprox(Hvs[i], res, atol = rtol * max(Hvmin, 1.0))
           H = hess_op!(nlps[i], x, tmp_n, obj_weight = σ)
           res = H * v
           @test isapprox(Hvs[i], res, atol = rtol * max(Hvmin, 1.0))
@@ -691,6 +694,12 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
             vals = hess_coord(nlps[i], x, y, obj_weight = σ)
             hprod!(nlps[i], rows, cols, vals, v, tmp_n)
             @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
+            hprod!(nlps[i], x, y, rows, cols, v, tmp_n, obj_weight = σ)
+            @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
+
+            H = hess_op!(nlps[i], x, y, rows, cols, tmp_n, obj_weight = σ)
+            res = H * v
+            @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
             H = hess_op!(nlps[i], x, y, tmp_n, obj_weight = σ)
             res = H * v
             @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
