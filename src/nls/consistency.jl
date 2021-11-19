@@ -134,12 +134,6 @@ function consistent_nls_functions(nlss; rtol = 1.0e-8, exclude = [])
       vals = jac_coord_residual(nlss[i], x)
       jprod_residual!(nlss[i], rows, cols, vals, v, tmp_m)
       @test isapprox(Jps[i], tmp_m, rtol = rtol)
-      jprod_residual!(nlss[i], x, rows, cols, v, tmp_m)
-      @test isapprox(Jps[i], tmp_m, rtol = rtol)
-
-      J = jac_op_residual!(nlss[i], x, rows, cols, tmp_m, tmp_n)
-      res = J * v
-      @test isapprox(Jps[i], res, rtol = rtol)
     end
 
     v = [-(-1.0)^i for i = 1:m]
@@ -160,12 +154,6 @@ function consistent_nls_functions(nlss; rtol = 1.0e-8, exclude = [])
       vals = jac_coord_residual(nlss[i], x)
       jtprod_residual!(nlss[i], rows, cols, vals, v, tmp_n)
       @test isapprox(Jtps[i], tmp_n, rtol = rtol)
-      jtprod_residual!(nlss[i], x, rows, cols, v, tmp_n)
-      @test isapprox(Jtps[i], tmp_n, rtol = rtol)
-
-      J = jac_op_residual!(nlss[i], x, rows, cols, tmp_m, tmp_n)
-      res = J' * v
-      @test isapprox(Jtps[i], res, rtol = rtol)
     end
   end
 
