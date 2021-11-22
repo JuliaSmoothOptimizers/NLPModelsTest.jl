@@ -689,12 +689,6 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
             vals = hess_coord(nlps[i], x, y, obj_weight = σ)
             hprod!(nlps[i], rows, cols, vals, v, tmp_n)
             @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
-            hprod!(nlps[i], x, y, rows, cols, v, tmp_n, obj_weight = σ)
-            @test isapprox(Lps[i], tmp_n, atol = rtol * max(Lpmin, 1.0))
-
-            H = hess_op!(nlps[i], x, y, rows, cols, tmp_n, obj_weight = σ)
-            res = H * v
-            @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
             H = hess_op!(nlps[i], x, y, tmp_n, obj_weight = σ)
             res = H * v
             @test isapprox(Lps[i], res, atol = rtol * max(Lpmin, 1.0))
