@@ -31,10 +31,10 @@ function consistent_nlps(
   consistent_counters(nlps)
   if test_derivative
     for nlp in nlps
-      @assert length(gradient_check(nlp)) == 0
-      @assert length(jacobian_check(nlp)) == 0
-      @assert sum(map(length, values(hessian_check(nlp)))) == 0
-      @assert sum(map(length, values(hessian_check_from_grad(nlp)))) == 0
+      @test length(gradient_check(nlp)) == 0
+      @test length(jacobian_check(nlp)) == 0
+      @test sum(map(length, values(hessian_check(nlp)))) == 0
+      @test sum(map(length, values(hessian_check_from_grad(nlp)))) == 0
     end
   end
 
