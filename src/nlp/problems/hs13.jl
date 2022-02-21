@@ -27,6 +27,7 @@ function HS13(::Type{T}) where {T}
     lcon = T[0],
     ucon = T[Inf],
     name = "HS13_manual",
+    nnzh = 2,
   )
 
   return HS13(meta, Counters())
@@ -47,13 +48,11 @@ function NLPModels.grad!(nlp::HS13, x::AbstractVector{T}, gx::AbstractVector{T})
 end
 
 function NLPModels.hess_structure!(nlp::HS13, rows::AbstractVector{Int}, cols::AbstractVector{Int})
-  @lencheck 3 rows cols
+  @lencheck 2 rows cols
   rows[1] = 1
   rows[2] = 2
-  rows[3] = 2
   cols[1] = 1
-  cols[2] = 1
-  cols[3] = 2
+  cols[2] = 2
   return rows, cols
 end
 
@@ -64,9 +63,9 @@ function NLPModels.hess_coord!(
   obj_weight = 1.0,
 ) where {T}
   @lencheck 2 x
-  @lencheck 3 vals
+  @lencheck 2 vals
   increment!(nlp, :neval_hess)
-  vals .= obj_weight .* T[2; 0; 2]
+  vals .= obj_weight .* T[2; 2]
   return vals
 end
 
@@ -79,9 +78,9 @@ function NLPModels.hess_coord!(
 ) where {T}
   @lencheck 2 x
   @lencheck 1 y
-  @lencheck 3 vals
+  @lencheck 2 vals
   increment!(nlp, :neval_hess)
-  vals .= obj_weight .* T[2; 0; 2] + T[6 * (1 - x[1]); 0; 0] * y[1]
+  vals .= obj_weight .* T[2; 2] + T[6 * (1 - x[1]); 0] * y[1]
   return vals
 end
 
@@ -176,11 +175,11 @@ function NLPModels.jth_hess_coord!(
   j::Integer,
   vals::AbstractVector{T},
 ) where {T}
-  @lencheck 3 vals
+  @lencheck 2 vals
   @lencheck 2 x
   @rangecheck 1 1 j
   NLPModels.increment!(nlp, :neval_jhess)
-  vals .= T[6 * (1 - x[1]); 0; 0]
+  vals .= T[6 * (1 - x[1]); 0]
   return vals
 end
 
