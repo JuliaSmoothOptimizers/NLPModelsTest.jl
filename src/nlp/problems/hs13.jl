@@ -8,7 +8,7 @@ export HS13
 ```math
 \\begin{aligned}
 \\min \\quad & (x_1 - 2)^2 + x_2^2 \\\\
-\\text{s. to} \\quad & 0 \\geq (1 - x_1)^3 - x_2
+\\text{s. to} \\quad & (1 - x_1)^3 - x_2 \\geq 0
 \\end{aligned}
 ```
 
@@ -23,7 +23,7 @@ function HS13(::Type{T}) where {T}
   meta = NLPModelMeta{T, Vector{T}}(
     2,
     ncon = 1,
-    x0 = T[-2; 2],
+    x0 = T[-2; -2],
     lcon = T[0],
     ucon = T[Inf],
     name = "HS13_manual",
@@ -139,7 +139,7 @@ function NLPModels.jprod!(nlp::HS13, x::AbstractVector, v::AbstractVector, Jv::A
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nlp, :neval_jprod)
-  Jv .= [(-3 * (1 - x[1])^2) * v[1] - v[2]]
+  Jv .= (-3 * (1 - x[1])^2) * v[1] - v[2]
   return Jv
 end
 
