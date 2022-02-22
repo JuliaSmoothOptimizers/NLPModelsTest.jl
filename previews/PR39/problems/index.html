@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Problems · NLPModelsTest.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/style.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="NLPModelsTest.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">NLPModelsTest.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Problems</a><ul class="internal"><li><a class="tocitem" href="#Description"><span>Description</span></a></li></ul></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Problems</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Problems</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/master/docs/src/problems.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Problems"><a class="docs-heading-anchor" href="#Problems">Problems</a><a id="Problems-1"></a><a class="docs-heading-anchor-permalink" href="#Problems" title="Permalink"></a></h1><p>We have implemented a few problems to be used with the consistency checks, explained <a href="../#consistency">here</a>.</p><ul><li>NLP problems:<ul><li><a href="#NLPModelsTest.BROWNDEN"><code>BROWNDEN</code></a></li><li><a href="#NLPModelsTest.HS5"><code>HS5</code></a></li><li><a href="#NLPModelsTest.HS6"><code>HS6</code></a></li><li><a href="#NLPModelsTest.HS10"><code>HS10</code></a></li><li><a href="#NLPModelsTest.HS11"><code>HS11</code></a></li><li><a href="#NLPModelsTest.HS14"><code>HS14</code></a></li><li><a href="#NLPModelsTest.LINCON"><code>LINCON</code></a></li><li><a href="#NLPModelsTest.LINSV"><code>LINSV</code></a></li><li><a href="#NLPModelsTest.MGH01Feas"><code>MGH01Feas</code></a></li></ul></li><li>NLS problems:<ul><li><a href="#NLPModelsTest.LLS"><code>LLS</code></a></li><li><a href="#NLPModelsTest.MGH01"><code>MGH01</code></a></li><li><a href="#NLPModelsTest.NLSHS20"><code>NLSHS20</code></a></li><li><a href="#NLPModelsTest.NLSLC"><code>NLSLC</code></a></li></ul></li></ul><h2 id="Description"><a class="docs-heading-anchor" href="#Description">Description</a><a id="Description-1"></a><a class="docs-heading-anchor-permalink" href="#Description" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.BROWNDEN" href="#NLPModelsTest.BROWNDEN"><code>NLPModelsTest.BROWNDEN</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = BROWNDEN()</code></pre><p><strong>Brown and Dennis function.</strong></p><pre><code class="language-none">Source: Problem 16 in
+J.J. Moré, B.S. Garbow and K.E. Hillstrom,
+&quot;Testing Unconstrained Optimization Software&quot;,
+ACM Transactions on Mathematical Software, vol. 7(1), pp. 17-41, 1981
+
+classification SUR2-AN-4-0</code></pre><p class="math-container">\[\min_x \ \sum_{i=1}^{20} \left(\left(x_1 + \tfrac{i}{5} x_2 - e^{i / 5}\right)^2
++ \left(x_3 + \sin(\tfrac{i}{5}) x_4 - \cos(\tfrac{i}{5})\right)^2\right)^2\]</p><p>Starting point: <code>[25.0; 5.0; -5.0; -1.0]</code></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/brownden.jl#L5-L23">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.HS5" href="#NLPModelsTest.HS5"><code>NLPModelsTest.HS5</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = HS5()</code></pre><p><strong>Problem 5 in the Hock-Schittkowski suite</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; \sin(x_1 + x_2) + (x_1 - x_2)^2 - \tfrac{3}{2}x_1 + \tfrac{5}{2}x_2 + 1 \\
+\text{s. to} \quad &amp; -1.5 \leq x_1 \leq 4 \\
+&amp; -3 \leq x_2 \leq 3
+\end{aligned}\]</p><p>Starting point: <code>[0.0; 0.0]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/hs5.jl#L3-L17">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.HS6" href="#NLPModelsTest.HS6"><code>NLPModelsTest.HS6</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = HS6()</code></pre><p><strong>Problem 6 in the Hock-Schittkowski suite</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; (1 - x_1)^2 \\
+\text{s. to} \quad &amp; 10 (x_2 - x_1^2) = 0
+\end{aligned}\]</p><p>Starting point: <code>[-1.2; 1.0]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/hs6.jl#L3-L16">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.HS10" href="#NLPModelsTest.HS10"><code>NLPModelsTest.HS10</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = HS10()</code></pre><p><strong>Problem 10 in the Hock-Schittkowski suite</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; x_1 - x_2 \\
+\text{s. to} \quad &amp; -3x_1^2 + 2x_1 x_2 - x_2^2 + 1 \geq 0
+\end{aligned}\]</p><p>Starting point: <code>[-10; 10]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/hs10.jl#L3-L16">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.HS11" href="#NLPModelsTest.HS11"><code>NLPModelsTest.HS11</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = HS11()</code></pre><p><strong>Problem 11 in the Hock-Schittkowski suite</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; (x_1 - 5)^2 + x_2^2 - 25 \\
+\text{s. to} \quad &amp; -x_1^2 + x_2 \leq 0
+\end{aligned}\]</p><p>Starting point: <code>[-4.9; 0.1]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/hs11.jl#L3-L16">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.HS14" href="#NLPModelsTest.HS14"><code>NLPModelsTest.HS14</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = HS14()</code></pre><p><strong>Problem 14 in the Hock-Schittkowski suite</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; (x_1 - 2)^2 + (x_2 - 1)^2 \\
+\text{s. to} \quad &amp; x_1 - 2x_2 + 1 = 0 \\
+&amp; -\tfrac{1}{4} x_1^2 - x_2^2 + 1 \geq 0
+\end{aligned}\]</p><p>Starting point: <code>[2; 2]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/hs14.jl#L3-L17">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.LINCON" href="#NLPModelsTest.LINCON"><code>NLPModelsTest.LINCON</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = LINCON()</code></pre><p><strong>Linearly constrained problem</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; (i + x_i^4) \\
+\text{s. to} \quad &amp; x_{15} = 0 \\
+&amp; x_{10} + 2x_{11} + 3x_{12} \geq 1 \\
+&amp; x_{13} - x_{14} \leq 16 \\
+&amp; -11 \leq 5x_8 - 6x_9 \leq 9 \\
+&amp; -2x_7 = -1 \\
+&amp; 4x_6 = 1 \\
+&amp; x_1 + 2x_2 \geq -5 \\
+&amp; 3x_1 + 4x_2 \geq -6 \\
+&amp; 9x_3 \leq 1 \\
+&amp; 12x_4 \leq 2 \\
+&amp; 15x_5 \leq 3
+\end{aligned}\]</p><p>Starting point: <code>zeros(15)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/lincon.jl#L3-L26">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.LINSV" href="#NLPModelsTest.LINSV"><code>NLPModelsTest.LINSV</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = LINSV()</code></pre><p><strong>Linear problem</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; x_1 \\
+\text{s. to} \quad &amp; x_1 + x_2 \geq 3 \\
+&amp; x_2 \geq 1
+\end{aligned}\]</p><p>Starting point: <code>[0; 0]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/linsv.jl#L3-L17">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.MGH01Feas" href="#NLPModelsTest.MGH01Feas"><code>NLPModelsTest.MGH01Feas</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nlp = MGH01Feas()</code></pre><p><strong>Rosenbrock function in feasibility format</strong></p><pre><code class="language-none">Source: Problem 1 in
+J.J. Moré, B.S. Garbow and K.E. Hillstrom,
+&quot;Testing Unconstrained Optimization Software&quot;,
+ACM Transactions on Mathematical Software, vol. 7(1), pp. 17-41, 1981</code></pre><p class="math-container">\[\begin{aligned}
+\min \quad &amp; 0 \\
+\text{s. to} \quad &amp; 1 - x_1 = 0 \\
+&amp; 10 (x_2 - x_1^2) = 0.
+\end{aligned}\]</p><p>Starting point: <code>[-1.2; 1]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nlp/problems/mgh01feas.jl#L3-L22">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.LLS" href="#NLPModelsTest.LLS"><code>NLPModelsTest.LLS</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nls = LLS()</code></pre><p><strong>Linear least squares</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; \tfrac{1}{2}\| F(x) \|^2 \\
+\text{s. to} \quad &amp; x_1 + x_2 \geq 0
+\end{aligned}\]</p><p>where</p><p class="math-container">\[F(x) = \begin{bmatrix}
+x_1 - x_2 \\
+x_1 + x_2 - 2 \\
+x_2 - 2
+\end{bmatrix}.\]</p><p>Starting point: <code>[0; 0]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nls/problems/lls.jl#L3-L24">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.MGH01" href="#NLPModelsTest.MGH01"><code>NLPModelsTest.MGH01</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nls = MGH01()</code></pre><p><strong>Rosenbrock function in nonlinear least squares format</strong></p><pre><code class="language-none">Source: Problem 1 in
+J.J. Moré, B.S. Garbow and K.E. Hillstrom,
+&quot;Testing Unconstrained Optimization Software&quot;,
+ACM Transactions on Mathematical Software, vol. 7(1), pp. 17-41, 1981</code></pre><p class="math-container">\[\begin{aligned}
+\min \quad &amp; \tfrac{1}{2}\| F(x) \|^2
+\end{aligned}\]</p><p>where</p><p class="math-container">\[F(x) = \begin{bmatrix}
+1 - x_1 \\
+10 (x_2 - x_1^2)
+\end{bmatrix}.\]</p><p>Starting point: <code>[-1.2; 1]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nls/problems/mgh01.jl#L5-L29">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.NLSHS20" href="#NLPModelsTest.NLSHS20"><code>NLPModelsTest.NLSHS20</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nls = NLSH20()</code></pre><p><strong>Problem 20 in the Hock-Schittkowski suite in nonlinear least squares format</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; \tfrac{1}{2}\| F(x) \|^2 \\
+\text{s. to} \quad &amp; x_1 + x_2^2 \geq 0 \\
+&amp; x_1^2 + x_2 \geq 0 \\
+&amp; x_1^2 + x_2^2 -1 \geq 0 \\
+&amp; -0.5 \leq x_1 \leq 0.5
+\end{aligned}\]</p><p>where</p><p class="math-container">\[F(x) = \begin{bmatrix}
+1 - x_1 \\
+10 (x_2 - x_1^2)
+\end{bmatrix}.\]</p><p>Starting point: <code>[-2; 1]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nls/problems/nlshs20.jl#L3-L26">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="NLPModelsTest.NLSLC" href="#NLPModelsTest.NLSLC"><code>NLPModelsTest.NLSLC</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">nls = NLSLC()</code></pre><p><strong>Linearly constrained nonlinear least squares problem</strong></p><p class="math-container">\[\begin{aligned}
+\min \quad &amp; \tfrac{1}{2}\| F(x) \|^2 \\
+\text{s. to} \quad &amp; x_{15} = 0 \\
+&amp; x_{10} + 2x_{11} + 3x_{12} \geq 1 \\
+&amp; x_{13} - x_{14} \leq 16 \\
+&amp; -11 \leq 5x_8 - 6x_9 \leq 9 \\
+&amp; -2x_7 = -1 \\
+&amp; 4x_6 = 1 \\
+&amp; x_1 + 2x_2 \geq -5 \\
+&amp; 3x_1 + 4x_2 \geq -6 \\
+&amp; 9x_3 \leq 1 \\
+&amp; 12x_4 \leq 2 \\
+&amp; 15x_5 \leq 3
+\end{aligned}\]</p><p>where</p><p class="math-container">\[F(x) = \begin{bmatrix}
+x_1^2 - 1 \\
+x_2^2 - 2^2 \\
+\vdots \\
+x_{15}^2 - 15^2
+\end{bmatrix}\]</p><p>Starting point: <code>zeros(15)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/98f58e8dce953b883a10af5704a8a70e43c916e6/src/nls/problems/nlslc.jl#L3-L35">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 22 February 2022 13:58">Tuesday 22 February 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
