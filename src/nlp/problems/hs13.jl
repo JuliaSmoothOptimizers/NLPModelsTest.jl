@@ -9,6 +9,8 @@ export HS13
 \\begin{aligned}
 \\min \\quad & (x_1 - 2)^2 + x_2^2 \\\\
 \\text{s. to} \\quad & (1 - x_1)^3 - x_2 \\geq 0
+\\quad & 0 \\leq x_1 \\\\
+& 0 \\leq x_2
 \\end{aligned}
 ```
 
@@ -24,6 +26,8 @@ function HS13(::Type{T}) where {T}
     2,
     ncon = 1,
     x0 = T[-2; -2],
+    lvar = zeros(T, 2),
+    uvar = T(Inf) * ones(T, 2),
     lcon = T[0],
     ucon = T[Inf],
     name = "HS13_manual",
