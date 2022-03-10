@@ -35,6 +35,9 @@ function MGH01Feas(::Type{T}) where {T}
     ucon = zeros(T, 2),
     nnzj = 3,
     nnzh = 1,
+    lin = 1:1,
+    lin_nnzj = 1,
+    nln_nnzj = 2,
   )
 
   return MGH01Feas(meta, Counters())
@@ -54,37 +57,74 @@ function NLPModels.grad!(nlp::MGH01Feas, x::AbstractVector{T}, gx::AbstractVecto
   return gx
 end
 
-function NLPModels.cons!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVector)
-  @lencheck 2 x cx
-  increment!(nls, :neval_cons)
-  cx .= [1 - x[1]; 10 * (x[2] - x[1]^2)]
+function NLPModels.cons_lin!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVector)
+  @lencheck 1 cx
+  @lencheck 2 x
+  increment!(nls, :neval_cons_lin)
+  cx .= [1 - x[1]]
+  return cx
+end
+
+function NLPModels.cons_nln!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVector)
+  @lencheck 1 cx
+  @lencheck 2 x
+  increment!(nls, :neval_cons_nln)
+  cx .= [10 * (x[2] - x[1]^2)]
   return cx
 end
 
 # Jx = [-1  0; -20x₁  10]
-function NLPModels.jac_structure!(
+function NLPModels.jac_lin_structure!(
   nls::MGH01Feas,
   rows::AbstractVector{<:Integer},
   cols::AbstractVector{<:Integer},
 )
-  @lencheck 3 rows cols
-  rows .= [1, 2, 2]
-  cols .= [1, 1, 2]
+  @lencheck 1 rows cols
+  rows .= [1]
+  cols .= [1]
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nls::MGH01Feas, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_nln_structure!(
+  nls::MGH01Feas,
+  rows::AbstractVector{<:Integer},
+  cols::AbstractVector{<:Integer},
+)
+  @lencheck 2 rows cols
+  rows .= [1, 1]
+  cols .= [1, 2]
+  return rows, cols
+end
+
+function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector, vals::AbstractVector)
   @lencheck 2 x
-  @lencheck 3 vals
-  increment!(nls, :neval_jac)
-  vals .= [-1, -20x[1], 10]
+  @lencheck 1 vals
+  increment!(nls, :neval_jac_lin)
+  vals .= [-1]
   return vals
 end
 
-function NLPModels.jprod!(nls::MGH01Feas, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
-  @lencheck 2 x v Jv
-  increment!(nls, :neval_jprod)
-  Jv .= [-v[1]; -20 * x[1] * v[1] + 10 * v[2]]
+function NLPModels.jac_nln_coord!(nls::MGH01Feas, x::AbstractVector, vals::AbstractVector)
+  @lencheck 2 x
+  @lencheck 2 vals
+  increment!(nls, :neval_jac_nln)
+  vals .= [-20x[1], 10]
+  return vals
+end
+
+function NLPModels.jprod_lin!(nls::MGH01Feas, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+  @lencheck 2 x v
+  @lencheck 1 Jv
+  increment!(nls, :neval_jprod_lin)
+  Jv .= [-v[1]]
+  return Jv
+end
+
+function NLPModels.jprod_nln!(nls::MGH01Feas, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+  @lencheck 2 x v
+  @lencheck 1 Jv
+  increment!(nls, :neval_jprod_nln)
+  Jv .= [-20 * x[1] * v[1] + 10 * v[2]]
   return Jv
 end
 
@@ -97,6 +137,32 @@ function NLPModels.jtprod!(
   @lencheck 2 x v Jtv
   increment!(nls, :neval_jtprod)
   Jtv .= [-v[1] - 20 * x[1] * v[2]; 10 * v[2]]
+  return Jtv
+end
+
+function NLPModels.jtprod_lin!(
+  nls::MGH01Feas,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
+  @lencheck 2 x Jtv
+  @lencheck 1 v
+  increment!(nls, :neval_jtprod_lin)
+  Jtv .= [-v[1]; 0]
+  return Jtv
+end
+
+function NLPModels.jtprod_nln!(
+  nls::MGH01Feas,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
+  @lencheck 2 x Jtv
+  @lencheck 1 v
+  increment!(nls, :neval_jtprod_nln)
+  Jtv .= [-20 * x[1] * v[1]; 10 * v[1]]
   return Jtv
 end
 

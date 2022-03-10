@@ -39,6 +39,9 @@ function LINCON(::Type{T}) where {T}
     lcon = T[22; 1; -Inf; -11; -1; 1; -5; -6; -Inf * ones(3)],
     ucon = T[22; Inf; 16; 9; -1; 1; Inf * ones(2); 1; 2; 3],
     name = "LINCON_manual",
+    lin = 1:11,
+    lin_nnzj = 17,
+    nln_nnzj = 0,
   )
 
   return LINCON(meta, Counters())
@@ -114,10 +117,10 @@ function NLPModels.hprod!(
   return Hv
 end
 
-function NLPModels.cons!(nlp::LINCON, x::AbstractVector, cx::AbstractVector)
+function NLPModels.cons_lin!(nlp::LINCON, x::AbstractVector, cx::AbstractVector)
   @lencheck 15 x
   @lencheck 11 cx
-  increment!(nlp, :neval_cons)
+  increment!(nlp, :neval_cons_lin)
   cx .= [
     15 * x[15]
     [1; 2; 3]' * x[10:12]
@@ -130,25 +133,25 @@ function NLPModels.cons!(nlp::LINCON, x::AbstractVector, cx::AbstractVector)
   return cx
 end
 
-function NLPModels.jac_structure!(nlp::LINCON, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.jac_lin_structure!(nlp::LINCON, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 17 rows cols
   rows .= [1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 7, 7, 8, 8, 9, 10, 11]
   cols .= [15, 10, 11, 12, 13, 14, 8, 9, 7, 6, 1, 2, 1, 2, 3, 4, 5]
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nlp::LINCON, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nlp::LINCON, x::AbstractVector, vals::AbstractVector)
   @lencheck 15 x
   @lencheck 17 vals
-  increment!(nlp, :neval_jac)
+  increment!(nlp, :neval_jac_lin)
   vals .= eltype(x).([15, 1, 2, 3, 1, -1, 5, 6, -2, 4, 1, 2, 3, 4, 9, 12, 15])
   return vals
 end
 
-function NLPModels.jprod!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_lin!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
   @lencheck 15 x v
   @lencheck 11 Jv
-  increment!(nlp, :neval_jprod)
+  increment!(nlp, :neval_jprod_lin)
   Jv[1] = 15 * v[15]
   Jv[2] = [1; 2; 3]' * v[10:12]
   Jv[3] = [1; -1]' * v[13:14]
@@ -159,10 +162,10 @@ function NLPModels.jprod!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jv:
   return Jv
 end
 
-function NLPModels.jtprod!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
   @lencheck 15 x Jtv
   @lencheck 11 v
-  increment!(nlp, :neval_jtprod)
+  increment!(nlp, :neval_jtprod_lin)
   Jtv[1] = 1 * v[7] + 3 * v[8]
   Jtv[2] = 2 * v[7] + 4 * v[8]
   Jtv[3] = 9 * v[9]

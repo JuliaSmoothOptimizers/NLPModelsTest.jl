@@ -48,6 +48,9 @@ function NLSLC(::Type{T}) where {T}
     lcon = T[22.0; 1.0; -Inf; -11.0; -1.0; 1.0; -5.0; -6.0; -Inf * ones(3)],
     ucon = T[22.0; Inf; 16.0; 9.0; -1.0; 1.0; Inf * ones(2); 1.0; 2.0; 3.0],
     name = "NLSLINCON",
+    lin = 1:11,
+    lin_nnzj = 17,
+    nln_nnzj = 0,
   )
   nls_meta = NLSMeta{T, Vector{T}}(15, 15, nnzj = 15, nnzh = 15)
 
@@ -145,10 +148,10 @@ function NLPModels.hprod_residual!(
   return Hiv
 end
 
-function NLPModels.cons!(nls::NLSLC, x::AbstractVector, cx::AbstractVector)
+function NLPModels.cons_lin!(nls::NLSLC, x::AbstractVector, cx::AbstractVector)
   @lencheck 15 x
   @lencheck 11 cx
-  increment!(nls, :neval_cons)
+  increment!(nls, :neval_cons_lin)
   cx .= [
     15 * x[15]
     [1; 2; 3]' * x[10:12]
@@ -161,7 +164,7 @@ function NLPModels.cons!(nls::NLSLC, x::AbstractVector, cx::AbstractVector)
   return cx
 end
 
-function NLPModels.jac_structure!(
+function NLPModels.jac_lin_structure!(
   nls::NLSLC,
   rows::AbstractVector{<:Integer},
   cols::AbstractVector{<:Integer},
@@ -172,18 +175,18 @@ function NLPModels.jac_structure!(
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nls::NLSLC, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nls::NLSLC, x::AbstractVector, vals::AbstractVector)
   @lencheck 15 x
   @lencheck 17 vals
-  increment!(nls, :neval_jac)
+  increment!(nls, :neval_jac_lin)
   vals .= eltype(x).([15, 1, 2, 3, 1, -1, 5, 6, -2, 4, 1, 2, 3, 4, 9, 12, 15])
   return vals
 end
 
-function NLPModels.jprod!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_lin!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
   @lencheck 15 x v
   @lencheck 11 Jv
-  increment!(nls, :neval_jprod)
+  increment!(nls, :neval_jprod_lin)
   Jv[1] = 15 * v[15]
   Jv[2] = [1; 2; 3]' * v[10:12]
   Jv[3] = [1; -1]' * v[13:14]
@@ -194,10 +197,10 @@ function NLPModels.jprod!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jv::
   return Jv
 end
 
-function NLPModels.jtprod!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
   @lencheck 15 x Jtv
   @lencheck 11 v
-  increment!(nls, :neval_jtprod)
+  increment!(nls, :neval_jtprod_lin)
   Jtv[1] = 1 * v[7] + 3 * v[8]
   Jtv[2] = 2 * v[7] + 4 * v[8]
   Jtv[3] = 9 * v[9]
