@@ -23,6 +23,7 @@ function consistent_nlps(
 )
   consistent_counters(nlps)
   test_meta && consistent_meta(nlps, rtol = rtol)
+  unconstrained_api(nlps, exclude = exclude)
   consistent_functions(nlps, rtol = rtol, exclude = exclude)
   consistent_counters(nlps)
   for nlp in nlps
@@ -56,6 +57,23 @@ function consistent_nlps(
     slack_nlps = SlackModel.(nlps)
     consistent_functions(slack_nlps, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
     consistent_counters(slack_nlps)
+  end
+end
+
+function unconstrained_api(nlps; exclude = [])
+  for nlp in nlps
+    if nlp.meta.ncon == 0
+      x0, x1 = nlp.meta.x0, ones(nlp.meta.nvar)
+      @test nlp.meta.nnzj == 0
+      @test cons in exclude || cons(nlp, x0) == []
+      @test jac_coord in exclude || jac_coord(nlp, x0) == []
+      @test jac_coord in exclude || jac_structure(nlp) == ([], [])
+      @test jac in exclude || jac(nlp, x0) == zeros(0, nlp.meta.nvar)
+      @test jtprod in exclude || all(jtprod(nlp, x0, nlp.meta.y0) .== 0)
+      @test jprod in exclude || jprod(nlp, x0, x1) == []
+      @test hess in exclude || hess(nlp, x0, ones(0)) == hess(nlp, x0)
+      @test hprod in exclude || hprod(nlp, x0, ones(0), x1) == hprod(nlp, x0, x1)
+    end
   end
 end
 

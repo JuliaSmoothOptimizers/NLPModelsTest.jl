@@ -29,6 +29,7 @@ function consistent_nlss(
     reset!(nls)
   end
   consistent_functions(nlss, exclude = exclude)
+  unconstrained_api(nlss, exclude = exclude)
 
   if test_slack && has_inequalities(nlss[1])
     reset!.(nlss)
