@@ -128,18 +128,6 @@ function NLPModels.jprod_nln!(nls::MGH01Feas, x::AbstractVector, v::AbstractVect
   return Jv
 end
 
-function NLPModels.jtprod!(
-  nls::MGH01Feas,
-  x::AbstractVector,
-  v::AbstractVector,
-  Jtv::AbstractVector,
-)
-  @lencheck 2 x v Jtv
-  increment!(nls, :neval_jtprod)
-  Jtv .= [-v[1] - 20 * x[1] * v[2]; 10 * v[2]]
-  return Jtv
-end
-
 function NLPModels.jtprod_lin!(
   nls::MGH01Feas,
   x::AbstractVector,

@@ -76,7 +76,10 @@ end
 function consistent_counters(nlps)
   N = length(nlps)
   V = zeros(Int, N)
-  for field in fieldnames(Counters)
+  check_fields = filter(
+    x -> !(occursin("lin", string(x)) | occursin("nln", string(x))), collect(fieldnames(Counters))
+  )
+  for field in check_fields
     V = [eval(field)(nlp) for nlp in nlps]
     @testset "Field $field" begin
       for i = 1:(N - 1)
