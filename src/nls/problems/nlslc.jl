@@ -197,7 +197,12 @@ function NLPModels.jprod_lin!(nls::NLSLC, x::AbstractVector, v::AbstractVector, 
   return Jv
 end
 
-function NLPModels.jtprod_lin!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(
+  nls::NLSLC,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
   @lencheck 15 x Jtv
   @lencheck 11 v
   increment!(nls, :neval_jtprod_lin)

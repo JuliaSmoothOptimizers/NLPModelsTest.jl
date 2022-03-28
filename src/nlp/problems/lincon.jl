@@ -133,7 +133,11 @@ function NLPModels.cons_lin!(nlp::LINCON, x::AbstractVector, cx::AbstractVector)
   return cx
 end
 
-function NLPModels.jac_lin_structure!(nlp::LINCON, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.jac_lin_structure!(
+  nlp::LINCON,
+  rows::AbstractVector{Int},
+  cols::AbstractVector{Int},
+)
   @lencheck 17 rows cols
   rows .= [1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 7, 7, 8, 8, 9, 10, 11]
   cols .= [15, 10, 11, 12, 13, 14, 8, 9, 7, 6, 1, 2, 1, 2, 3, 4, 5]
@@ -162,7 +166,12 @@ function NLPModels.jprod_lin!(nlp::LINCON, x::AbstractVector, v::AbstractVector,
   return Jv
 end
 
-function NLPModels.jtprod_lin!(nlp::LINCON, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(
+  nlp::LINCON,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
   @lencheck 15 x Jtv
   @lencheck 11 v
   increment!(nlp, :neval_jtprod_lin)

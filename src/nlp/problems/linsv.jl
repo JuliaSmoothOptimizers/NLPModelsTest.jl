@@ -104,7 +104,11 @@ function NLPModels.cons_lin!(nlp::LINSV, x::AbstractVector, cx::AbstractVector)
   return cx
 end
 
-function NLPModels.jac_lin_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.jac_lin_structure!(
+  nlp::LINSV,
+  rows::AbstractVector{Int},
+  cols::AbstractVector{Int},
+)
   @lencheck 3 rows cols
   rows .= [1, 1, 2]
   cols .= [1, 2, 2]
@@ -127,7 +131,12 @@ function NLPModels.jprod_lin!(nlp::LINSV, x::AbstractVector, v::AbstractVector, 
   return Jv
 end
 
-function NLPModels.jtprod_lin!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(
+  nlp::LINSV,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
   @lencheck 2 x v Jtv
   increment!(nlp, :neval_jtprod_lin)
   Jtv[1] = v[1]
