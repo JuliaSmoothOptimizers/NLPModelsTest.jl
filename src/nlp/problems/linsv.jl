@@ -30,6 +30,9 @@ function LINSV(::Type{T}) where {T}
     lcon = T[3; 1],
     ucon = T[Inf; Inf],
     name = "LINSV_manual",
+    lin = 1:2,
+    lin_nnzj = 3,
+    nln_nnzj = 0,
   )
 
   return LINSV(meta, Counters())
@@ -94,39 +97,39 @@ function NLPModels.hprod!(
   return Hv
 end
 
-function NLPModels.cons!(nlp::LINSV, x::AbstractVector, cx::AbstractVector)
+function NLPModels.cons_lin!(nlp::LINSV, x::AbstractVector, cx::AbstractVector)
   @lencheck 2 x cx
-  increment!(nlp, :neval_cons)
+  increment!(nlp, :neval_cons_lin)
   cx .= [x[1] + x[2]; x[2]]
   return cx
 end
 
-function NLPModels.jac_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.jac_lin_structure!(nlp::LINSV, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 3 rows cols
   rows .= [1, 1, 2]
   cols .= [1, 2, 2]
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nlp::LINSV, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nlp::LINSV, x::AbstractVector, vals::AbstractVector)
   @lencheck 2 x
   @lencheck 3 vals
-  increment!(nlp, :neval_jac)
+  increment!(nlp, :neval_jac_lin)
   vals .= eltype(x).([1, 1, 1])
   return vals
 end
 
-function NLPModels.jprod!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_lin!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
   @lencheck 2 x v Jv
-  increment!(nlp, :neval_jprod)
+  increment!(nlp, :neval_jprod_lin)
   Jv[1] = v[1] + v[2]
   Jv[2] = v[2]
   return Jv
 end
 
-function NLPModels.jtprod!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(nlp::LINSV, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
   @lencheck 2 x v Jtv
-  increment!(nlp, :neval_jtprod)
+  increment!(nlp, :neval_jtprod_lin)
   Jtv[1] = v[1]
   Jtv[2] = v[1] + v[2]
   return Jtv

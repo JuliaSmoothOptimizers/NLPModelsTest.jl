@@ -38,6 +38,9 @@ function LLS(::Type{T}) where {T}
     ucon = T[Inf],
     nnzj = 2,
     nnzh = 2,
+    lin = 1:1,
+    lin_nnzj = 2,
+    nln_nnzj = 0,
   )
   nls_meta = NLSMeta{T, Vector{T}}(3, 2, nnzj = 5, nnzh = 0)
 
@@ -134,15 +137,15 @@ function NLPModels.hprod_residual!(
   return Hiv
 end
 
-function NLPModels.cons!(nls::LLS, x::AbstractVector, cx::AbstractVector)
+function NLPModels.cons_lin!(nls::LLS, x::AbstractVector, cx::AbstractVector)
   @lencheck 2 x
   @lencheck 1 cx
-  increment!(nls, :neval_cons)
+  increment!(nls, :neval_cons_lin)
   cx[1] = x[1] + x[2]
   return cx
 end
 
-function NLPModels.jac_structure!(
+function NLPModels.jac_lin_structure!(
   nls::LLS,
   rows::AbstractVector{<:Integer},
   cols::AbstractVector{<:Integer},
@@ -153,26 +156,26 @@ function NLPModels.jac_structure!(
   return rows, cols
 end
 
-function NLPModels.jac_coord!(nls::LLS, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nls::LLS, x::AbstractVector, vals::AbstractVector)
   @lencheck 2 x vals
-  increment!(nls, :neval_jac)
+  increment!(nls, :neval_jac_lin)
   T = eltype(x)
   vals .= T[1, 1]
   return vals
 end
 
-function NLPModels.jprod!(nls::LLS, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_lin!(nls::LLS, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
   @lencheck 2 x v
   @lencheck 1 Jv
-  increment!(nls, :neval_jprod)
+  increment!(nls, :neval_jprod_lin)
   Jv[1] = v[1] + v[2]
   return Jv
 end
 
-function NLPModels.jtprod!(nls::LLS, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_lin!(nls::LLS, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
   @lencheck 2 x Jtv
   @lencheck 1 v
-  increment!(nls, :neval_jtprod)
+  increment!(nls, :neval_jtprod_lin)
   Jtv .= v
   return Jtv
 end
