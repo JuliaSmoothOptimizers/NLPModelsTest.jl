@@ -112,7 +112,12 @@ function NLPModels.jac_nln_coord!(nls::MGH01Feas, x::AbstractVector, vals::Abstr
   return vals
 end
 
-function NLPModels.jprod_lin!(nls::MGH01Feas, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_lin!(
+  nls::MGH01Feas,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jv::AbstractVector,
+)
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_lin)
@@ -120,7 +125,12 @@ function NLPModels.jprod_lin!(nls::MGH01Feas, x::AbstractVector, v::AbstractVect
   return Jv
 end
 
-function NLPModels.jprod_nln!(nls::MGH01Feas, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_nln!(
+  nls::MGH01Feas,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jv::AbstractVector,
+)
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_nln)
