@@ -17,14 +17,15 @@ By default, the functions `hess`, `hprod` and `hess_coord` (and therefore associ
 function consistent_nlss(
   nlss;
   exclude = [hess, hess_coord, jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
+  linear_api = false,
   test_slack = true,
   test_ff = true,
 )
   consistent_nls_counters(nlss)
-  consistent_counters(nlss)
+  consistent_counters(nlss, linear_api = linear_api)
   consistent_nls_functions(nlss, exclude = exclude)
   consistent_nls_counters(nlss)
-  consistent_counters(nlss)
+  consistent_counters(nlss, linear_api = linear_api)
   for nls in nlss
     reset!(nls)
   end
@@ -35,7 +36,7 @@ function consistent_nlss(
     slack_nlss = SlackNLSModel.(nlss)
     consistent_nls_functions(slack_nlss, exclude = exclude)
     consistent_nls_counters(slack_nlss)
-    consistent_counters(slack_nlss)
+    consistent_counters(slack_nlss, linear_api = linear_api)
     consistent_functions(slack_nlss, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
   end
 
@@ -44,7 +45,7 @@ function consistent_nlss(
     ff_nlss = FeasibilityFormNLS.(nlss)
     consistent_nls_functions(ff_nlss, exclude = exclude)
     consistent_nls_counters(ff_nlss)
-    consistent_counters(ff_nlss)
+    consistent_counters(ff_nlss, linear_api = linear_api)
     consistent_functions(ff_nlss, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
   end
 end

@@ -15,20 +15,21 @@ The keyword `exclude` can be used to pass functions to be ignored, if some of th
 function consistent_nlps(
   nlps;
   exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
+  linear_api = false,
   test_meta = true,
   test_slack = true,
   test_qn = true,
   test_derivative = true,
   rtol = 1.0e-8,
 )
-  consistent_counters(nlps)
+  consistent_counters(nlps, linear_api = linear_api)
   test_meta && consistent_meta(nlps, rtol = rtol)
   consistent_functions(nlps, rtol = rtol, exclude = exclude)
-  consistent_counters(nlps)
+  consistent_counters(nlps, linear_api = linear_api)
   for nlp in nlps
     reset!(nlp)
   end
-  consistent_counters(nlps)
+  consistent_counters(nlps, linear_api = linear_api)
   if test_derivative
     for nlp in nlps
       @test length(gradient_check(nlp)) == 0
@@ -48,14 +49,14 @@ function consistent_nlps(
       [nlps; qnmodels],
       exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
     )
-    consistent_counters([nlps; qnmodels])
+    consistent_counters([nlps; qnmodels], linear_api = linear_api)
   end
 
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
     slack_nlps = SlackModel.(nlps)
     consistent_functions(slack_nlps, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
-    consistent_counters(slack_nlps)
+    consistent_counters(slack_nlps, linear_api = linear_api)
   end
 end
 
@@ -73,7 +74,7 @@ function consistent_meta(nlps; rtol = 1.0e-8)
   end
 end
 
-function consistent_counters(nlps)
+function consistent_counters(nlps; linear_api = false)
   N = length(nlps)
   V = zeros(Int, N)
   check_fields = filter(
@@ -88,8 +89,18 @@ function consistent_counters(nlps)
       end
     end
   end
-  V = [sum_counters(nlp) for nlp in nlps]
-  @test all(V .== V[1])
+  if linear_api
+    V = [sum_counters(nlp) for nlp in nlps]
+    @test all(V .== V[1])
+    for field in setdiff(collect(fieldnames(Counters)), check_fields)
+      V = [eval(field)(nlp) for nlp in nlps]
+      @testset "Field $field" begin
+        for i = 1:(N - 1)
+          @test V[i] == V[i + 1]
+        end
+      end
+    end
+  end
 end
 
 function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
