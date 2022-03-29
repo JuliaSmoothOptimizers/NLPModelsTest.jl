@@ -108,7 +108,11 @@ function NLPModels.cons_nln!(nlp::HS11, x::AbstractVector, cx::AbstractVector)
   return cx
 end
 
-function NLPModels.jac_nln_structure!(nlp::HS11, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.jac_nln_structure!(
+  nlp::HS11,
+  rows::AbstractVector{Int},
+  cols::AbstractVector{Int},
+)
   @lencheck 2 rows cols
   rows .= [1, 1]
   cols .= [1, 2]

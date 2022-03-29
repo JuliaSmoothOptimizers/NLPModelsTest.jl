@@ -8,7 +8,11 @@ To make this assertion in your code use
 
     @lencheck size input [more inputs separated by spaces]
 """
-function check_nlp_dimensions(nlp; linear_api = false, exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod])
+function check_nlp_dimensions(
+  nlp;
+  linear_api = false,
+  exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
+)
   n, m = nlp.meta.nvar, nlp.meta.ncon
   nnzh, nnzj = nlp.meta.nnzh, nlp.meta.nnzj
 
@@ -222,11 +226,46 @@ function check_nlp_dimensions(nlp; linear_api = false, exclude = [jth_hess, jth_
         @test_throws DimensionError jac_lin_op!(nlp, badx, Jv_lin, Jtw)
         @test_throws DimensionError jac_lin_op!(nlp, x, badJv_lin, Jtw)
         @test_throws DimensionError jac_lin_op!(nlp, x, Jv_lin, badJtw)
-        @test_throws DimensionError jac_lin_op!(nlp, badjrows_lin, jcols_lin, jvals_lin, Jv_lin, Jtw)
-        @test_throws DimensionError jac_lin_op!(nlp, jrows_lin, badjcols_lin, jvals_lin, Jv_lin, Jtw)
-        @test_throws DimensionError jac_lin_op!(nlp, jrows_lin, jcols_lin, badjvals_lin, Jv_lin, Jtw)
-        @test_throws DimensionError jac_lin_op!(nlp, jrows_lin, jcols_lin, jvals_lin, badJv_lin, Jtw)
-        @test_throws DimensionError jac_lin_op!(nlp, jrows_lin, jcols_lin, jvals_lin, Jv_lin, badJtw)
+        @test_throws DimensionError jac_lin_op!(
+          nlp,
+          badjrows_lin,
+          jcols_lin,
+          jvals_lin,
+          Jv_lin,
+          Jtw,
+        )
+        @test_throws DimensionError jac_lin_op!(
+          nlp,
+          jrows_lin,
+          badjcols_lin,
+          jvals_lin,
+          Jv_lin,
+          Jtw,
+        )
+        @test_throws DimensionError jac_lin_op!(
+          nlp,
+          jrows_lin,
+          jcols_lin,
+          badjvals_lin,
+          Jv_lin,
+          Jtw,
+        )
+        @test_throws DimensionError jac_lin_op!(
+          nlp,
+          jrows_lin,
+          jcols_lin,
+          jvals_lin,
+          badJv_lin,
+          Jtw,
+        )
+        @test_throws DimensionError jac_lin_op!(
+          nlp,
+          jrows_lin,
+          jcols_lin,
+          jvals_lin,
+          Jv_lin,
+          badJtw,
+        )
       end
 
       if linear_api && nlp.meta.nnln > 0
@@ -234,11 +273,46 @@ function check_nlp_dimensions(nlp; linear_api = false, exclude = [jth_hess, jth_
         @test_throws DimensionError jac_nln_op!(nlp, badx, Jv_nln, Jtw)
         @test_throws DimensionError jac_nln_op!(nlp, x, badJv_nln, Jtw)
         @test_throws DimensionError jac_nln_op!(nlp, x, Jv_nln, badJtw)
-        @test_throws DimensionError jac_nln_op!(nlp, badjrows_nln, jcols_nln, jvals_nln, Jv_nln, Jtw)
-        @test_throws DimensionError jac_nln_op!(nlp, jrows_nln, badjcols_nln, jvals_nln, Jv_nln, Jtw)
-        @test_throws DimensionError jac_nln_op!(nlp, jrows_nln, jcols_nln, badjvals_nln, Jv_nln, Jtw)
-        @test_throws DimensionError jac_nln_op!(nlp, jrows_nln, jcols_nln, jvals_nln, badJv_nln, Jtw)
-        @test_throws DimensionError jac_nln_op!(nlp, jrows_nln, jcols_nln, jvals_nln, Jv_nln, badJtw)
+        @test_throws DimensionError jac_nln_op!(
+          nlp,
+          badjrows_nln,
+          jcols_nln,
+          jvals_nln,
+          Jv_nln,
+          Jtw,
+        )
+        @test_throws DimensionError jac_nln_op!(
+          nlp,
+          jrows_nln,
+          badjcols_nln,
+          jvals_nln,
+          Jv_nln,
+          Jtw,
+        )
+        @test_throws DimensionError jac_nln_op!(
+          nlp,
+          jrows_nln,
+          jcols_nln,
+          badjvals_nln,
+          Jv_nln,
+          Jtw,
+        )
+        @test_throws DimensionError jac_nln_op!(
+          nlp,
+          jrows_nln,
+          jcols_nln,
+          jvals_nln,
+          badJv_nln,
+          Jtw,
+        )
+        @test_throws DimensionError jac_nln_op!(
+          nlp,
+          jrows_nln,
+          jcols_nln,
+          jvals_nln,
+          Jv_nln,
+          badJtw,
+        )
       end
     end
   end
