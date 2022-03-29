@@ -21,6 +21,7 @@ Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nls(
   nls_from_T;
+  linear_api = false,
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [],
 )
@@ -50,6 +51,16 @@ function multiple_precision_nls(
       @test cons ∈ exclude || eltype(cons(nls, x)) == T
       @test jac ∈ exclude || eltype(jac(nls, x)) == T
       @test jac_op ∈ exclude || eltype(jac_op(nls, x)) == T
+      if linear_api && nls.meta.nnln > 0
+        @test cons ∈ exclude || eltype(cons_nln(nls, x)) == T
+        @test jac ∈ exclude || eltype(jac_nln(nls, x)) == T
+        @test jac_op ∈ exclude || eltype(jac_nln_op(nls, x)) == T
+      end
+      if linear_api && nls.meta.nlin > 0
+        @test cons ∈ exclude || eltype(cons_lin(nls, x)) == T
+        @test jac ∈ exclude || eltype(jac_lin(nls, x)) == T
+        @test jac_op ∈ exclude || eltype(jac_lin_op(nls, x)) == T
+      end
       if jac_coord ∉ exclude && jac_op ∉ exclude
         rows, cols = jac_structure(nls)
         vals = jac_coord(nls, x)
@@ -57,6 +68,22 @@ function multiple_precision_nls(
         Av = zeros(T, nls.meta.ncon)
         Atv = zeros(T, nls.meta.nvar)
         @test eltype(jac_op!(nls, rows, cols, vals, Av, Atv)) == T
+        if linear_api && nls.meta.nnln > 0
+          rows, cols = jac_nln_structure(nls)
+          vals = jac_nln_coord(nls, x)
+          @test eltype(vals) == T
+          Av = zeros(T, nls.meta.nnln)
+          Atv = zeros(T, nls.meta.nvar)
+          @test eltype(jac_nln_op!(nls, rows, cols, vals, Av, Atv)) == T
+        end
+        if linear_api && nls.meta.nlin > 0
+          rows, cols = jac_lin_structure(nls)
+          vals = jac_lin_coord(nls, x)
+          @test eltype(vals) == T
+          Av = zeros(T, nls.meta.nlin)
+          Atv = zeros(T, nls.meta.nvar)
+          @test eltype(jac_lin_op!(nls, rows, cols, vals, Av, Atv)) == T
+        end
       end
     end
   end
