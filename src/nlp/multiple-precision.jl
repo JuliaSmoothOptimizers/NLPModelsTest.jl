@@ -21,6 +21,7 @@ Defaults to `[Float16, Float32, Float64, BigFloat]`.
 """
 function multiple_precision_nlp(
   nlp_from_T;
+  linear_api = false,
   precisions::Array = [Float16, Float32, Float64, BigFloat],
   exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
 )
@@ -43,6 +44,16 @@ function multiple_precision_nlp(
       @test cons ∈ exclude || eltype(cons(nlp, x)) == T
       @test jac ∈ exclude || eltype(jac(nlp, x)) == T
       @test jac_op ∈ exclude || eltype(jac_op(nlp, x)) == T
+      if linear_api && nlp.meta.nnln > 0
+        @test cons ∈ exclude || eltype(cons_nln(nlp, x)) == T
+        @test jac ∈ exclude || eltype(jac_nln(nlp, x)) == T
+        @test jac_op ∈ exclude || eltype(jac_nln_op(nlp, x)) == T
+      end
+      if linear_api && nlp.meta.nlin > 0
+        @test cons ∈ exclude || eltype(cons_lin(nlp, x)) == T
+        @test jac ∈ exclude || eltype(jac_lin(nlp, x)) == T
+        @test jac_op ∈ exclude || eltype(jac_lin_op(nlp, x)) == T
+      end
       if jac_coord ∉ exclude && jac_op ∉ exclude
         rows, cols = jac_structure(nlp)
         vals = jac_coord(nlp, x)
@@ -50,6 +61,22 @@ function multiple_precision_nlp(
         Av = zeros(T, nlp.meta.ncon)
         Atv = zeros(T, nlp.meta.nvar)
         @test eltype(jac_op!(nlp, rows, cols, vals, Av, Atv)) == T
+        if linear_api && nlp.meta.nnln > 0
+          rows, cols = jac_nln_structure(nlp)
+          vals = jac_nln_coord(nlp, x)
+          @test eltype(vals) == T
+          Av = zeros(T, nlp.meta.nnln)
+          Atv = zeros(T, nlp.meta.nvar)
+          @test eltype(jac_nln_op!(nlp, rows, cols, vals, Av, Atv)) == T
+        end
+        if linear_api && nlp.meta.nlin > 0
+          rows, cols = jac_lin_structure(nlp)
+          vals = jac_lin_coord(nlp, x)
+          @test eltype(vals) == T
+          Av = zeros(T, nlp.meta.nlin)
+          Atv = zeros(T, nlp.meta.nvar)
+          @test eltype(jac_lin_op!(nlp, rows, cols, vals, Av, Atv)) == T
+        end
       end
       @test hess ∈ exclude || eltype(hess(nlp, x, y)) == T
       @test hess ∈ exclude || eltype(hess(nlp, x, y, obj_weight = one(T))) == T
