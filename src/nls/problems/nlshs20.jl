@@ -167,7 +167,12 @@ function NLPModels.jac_nln_coord!(nls::NLSHS20, x::AbstractVector, vals::Abstrac
   return vals
 end
 
-function NLPModels.jprod_nln!(nls::NLSHS20, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
+function NLPModels.jprod_nln!(
+  nls::NLSHS20,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jv::AbstractVector,
+)
   @lencheck 2 x v
   @lencheck 3 Jv
   increment!(nls, :neval_jprod_nln)
@@ -175,7 +180,12 @@ function NLPModels.jprod_nln!(nls::NLSHS20, x::AbstractVector, v::AbstractVector
   return Jv
 end
 
-function NLPModels.jtprod_nln!(nls::NLSHS20, x::AbstractVector, v::AbstractVector, Jtv::AbstractVector)
+function NLPModels.jtprod_nln!(
+  nls::NLSHS20,
+  x::AbstractVector,
+  v::AbstractVector,
+  Jtv::AbstractVector,
+)
   @lencheck 2 x Jtv
   @lencheck 3 v
   increment!(nls, :neval_jtprod_nln)
