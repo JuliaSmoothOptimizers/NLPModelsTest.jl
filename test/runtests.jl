@@ -13,7 +13,7 @@ addprocs(np - 1)
       consistent_nlps([nlp, nlp], exclude = [])
     end
     @testset "Check dimensions of problem $p" begin
-      check_nlp_dimensions(nlp, exclude = [])
+      check_nlp_dimensions(nlp, linear_api = true, exclude = [])
     end
     @testset "Multiple precision support of problem $p" begin
       multiple_precision_nlp(nlp_from_T, exclude = [])
