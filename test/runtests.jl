@@ -10,7 +10,7 @@ addprocs(np - 1)
     nlp_from_T = eval(Symbol(p))
     nlp = nlp_from_T()
     @testset "Consistency of problem $p" begin
-      consistent_nlps([nlp, nlp], exclude = [])
+      consistent_nlps([nlp, nlp], exclude = [], linear_api = true)
     end
     @testset "Check dimensions of problem $p" begin
       check_nlp_dimensions(nlp, linear_api = true, exclude = [])
@@ -33,7 +33,7 @@ end
     nls = nls_from_T()
     exclude = p == "LLS" ? [hess_coord, hess] : []
     @testset "Consistency of problem $p" begin
-      consistent_nlss([nls, nls], exclude = exclude)
+      consistent_nlss([nls, nls], exclude = exclude, linear_api = true)
     end
     @testset "Check dimensions of problem $p" begin
       check_nls_dimensions(nls, exclude = exclude)
