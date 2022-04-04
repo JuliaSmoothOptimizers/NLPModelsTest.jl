@@ -22,7 +22,7 @@ addprocs(np - 1)
       view_subarray_nlp(nlp, exclude = [])
     end
     @testset "Test coord memory of problem $p" begin
-      coord_memory_nlp(nlp, exclude = [])
+      coord_memory_nlp(nlp, linear_api = true, exclude = [])
     end
   end
 end

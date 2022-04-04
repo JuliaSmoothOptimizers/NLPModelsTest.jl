@@ -6,7 +6,7 @@ export coord_memory_nlp
 Check that the allocated memory for in place coord methods is
 sufficiently smaller than their allocating counter parts.
 """
-function coord_memory_nlp(nlp::AbstractNLPModel; exclude = [jth_hess_coord])
+function coord_memory_nlp(nlp::AbstractNLPModel; linear_api = false, exclude = [jth_hess_coord])
   n = nlp.meta.nvar
   m = nlp.meta.ncon
 
@@ -47,6 +47,22 @@ function coord_memory_nlp(nlp::AbstractNLPModel; exclude = [jth_hess_coord])
       jac_coord!(nlp, x, vals)
       al2 = @allocated jac_coord!(nlp, x, vals)
       @test al2 < al1 - 50
+      if linear_api && nlp.meta.nlin > 0
+        vals = jac_lin_coord(nlp, x)
+        al1 = @allocated vals = jac_lin_coord(nlp, x)
+        V = zeros(nlp.meta.lin_nnzj)
+        jac_lin_coord!(nlp, x, vals)
+        al2 = @allocated jac_lin_coord!(nlp, x, vals)
+        @test al2 < al1 - 50
+      end
+      if linear_api && nlp.meta.nnln > 0
+        vals = jac_nln_coord(nlp, x)
+        al1 = @allocated vals = jac_nln_coord(nlp, x)
+        V = zeros(nlp.meta.nln_nnzj)
+        jac_nln_coord!(nlp, x, vals)
+        al2 = @allocated jac_nln_coord!(nlp, x, vals)
+        @test al2 < al1 - 50
+      end
     end
   end
 end
