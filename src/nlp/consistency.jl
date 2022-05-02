@@ -24,7 +24,7 @@ function consistent_nlps(
 )
   consistent_counters(nlps, linear_api = linear_api)
   test_meta && consistent_meta(nlps, rtol = rtol)
-  consistent_functions(nlps, rtol = rtol, exclude = exclude)
+  consistent_functions(nlps, linear_api = linear_api, rtol = rtol, exclude = exclude)
   consistent_counters(nlps, linear_api = linear_api)
   for nlp in nlps
     reset!(nlp)
@@ -47,6 +47,7 @@ function consistent_nlps(
     ]
     consistent_functions(
       [nlps; qnmodels],
+      linear_api = linear_api,
       exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
     )
     consistent_counters([nlps; qnmodels], linear_api = linear_api)
@@ -55,7 +56,11 @@ function consistent_nlps(
   if test_slack && has_inequalities(nlps[1])
     reset!.(nlps)
     slack_nlps = SlackModel.(nlps)
-    consistent_functions(slack_nlps, exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude)
+    consistent_functions(
+      slack_nlps,
+      linear_api = linear_api,
+      exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
+    )
     consistent_counters(slack_nlps, linear_api = linear_api)
   end
 end
@@ -103,13 +108,19 @@ function consistent_counters(nlps; linear_api = false)
   end
 end
 
-function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
+function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude = [])
   N = length(nlps)
   n = nlps[1].meta.nvar
   m = nlps[1].meta.ncon
+  test_lin = linear_api && (nlps[1].meta.nlin > 0)
+  mlin = nlps[1].meta.nlin
+  test_nln = linear_api && (nlps[1].meta.nnln > 0)
+  mnln = nlps[1].meta.nnln
 
   tmp_n = zeros(n)
   tmp_m = zeros(m)
+  tmp_mlin = zeros(mlin)
+  tmp_mnln = zeros(mnln)
   tmp_nn = zeros(n, n)
 
   x = 10 * [-(-1.0)^i for i = 1:n]
@@ -292,6 +303,68 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       end
     end
 
+    if !(cons in exclude) && test_lin
+      cs = Any[cons_lin(nlp, x) for nlp in nlps]
+      cls = [nlp.meta.lcon[nlp.meta.lin] for nlp in nlps]
+      cus = [nlp.meta.ucon[nlp.meta.lin] for nlp in nlps]
+      cmin = minimum(map(norm, cs))
+      for i = 1:N
+        tmpc = cons_lin!(nlps[i], x, tmp_mlin)
+        @test isapprox(cs[i], tmp_mlin, atol = rtol * max(cmin, 1.0))
+        @test isapprox(tmpc, tmp_mlin, atol = rtol * max(cmin, 1.0))
+        ci, li, ui = copy(cs[i]), cls[i], cus[i]
+        for k = 1:mlin
+          if li[k] > -Inf
+            ci[k] -= li[k]
+          elseif ui[k] < Inf
+            ci[k] -= ui[k]
+          end
+        end
+        for j = (i + 1):N
+          cj, lj, uj = copy(cs[j]), cls[j], cus[j]
+          for k = 1:mlin
+            if lj[k] > -Inf
+              cj[k] -= lj[k]
+            elseif uj[k] < Inf
+              cj[k] -= uj[k]
+            end
+          end
+          @test isapprox(norm(ci), norm(cj), atol = rtol * max(cmin, 1.0))
+        end
+      end
+    end
+
+    if !(cons in exclude) && test_nln
+      cs = Any[cons_nln(nlp, x) for nlp in nlps]
+      cls = [nlp.meta.lcon[nlp.meta.nln] for nlp in nlps]
+      cus = [nlp.meta.ucon[nlp.meta.nln] for nlp in nlps]
+      cmin = minimum(map(norm, cs))
+      for i = 1:N
+        tmpc = cons_nln!(nlps[i], x, tmp_mnln)
+        @test isapprox(cs[i], tmp_mnln, atol = rtol * max(cmin, 1.0))
+        @test isapprox(tmpc, tmp_mnln, atol = rtol * max(cmin, 1.0))
+        ci, li, ui = copy(cs[i]), cls[i], cus[i]
+        for k = 1:mnln
+          if li[k] > -Inf
+            ci[k] -= li[k]
+          elseif ui[k] < Inf
+            ci[k] -= ui[k]
+          end
+        end
+        for j = (i + 1):N
+          cj, lj, uj = copy(cs[j]), cls[j], cus[j]
+          for k = 1:mnln
+            if lj[k] > -Inf
+              cj[k] -= lj[k]
+            elseif uj[k] < Inf
+              cj[k] -= uj[k]
+            end
+          end
+          @test isapprox(norm(ci), norm(cj), atol = rtol * max(cmin, 1.0))
+        end
+      end
+    end
+
     if intersect([jac, jac_coord], exclude) == []
       Js = [jac(nlp, x) for nlp in nlps]
       Jmin = minimum(map(norm, Js))
@@ -310,6 +383,50 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
         @test JS == J
         tmp_V = zeros(nlps[i].meta.nnzj)
         jac_coord!(nlps[i], x, tmp_V)
+        @test tmp_V == V
+      end
+    end
+
+    if (intersect([jac, jac_coord], exclude) == []) && test_lin
+      Js = [jac_lin(nlp, x) for nlp in nlps]
+      Jmin = minimum(map(norm, Js))
+      for i = 1:N
+        vi = norm(Js[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Js[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        V = jac_lin_coord(nlps[i], x)
+        I, J = jac_lin_structure(nlps[i])
+        @test length(I) == length(J) == length(V) == nlps[i].meta.lin_nnzj
+        @test isapprox(sparse(I, J, V, mlin, n), Js[i], atol = rtol * max(Jmin, 1.0))
+        IS, JS = zeros(Int, nlps[i].meta.lin_nnzj), zeros(Int, nlps[i].meta.lin_nnzj)
+        jac_lin_structure!(nlps[i], IS, JS)
+        @test IS == I
+        @test JS == J
+        tmp_V = zeros(nlps[i].meta.lin_nnzj)
+        jac_lin_coord!(nlps[i], x, tmp_V)
+        @test tmp_V == V
+      end
+    end
+
+    if (intersect([jac, jac_coord], exclude) == []) && test_nln
+      Js = [jac_nln(nlp, x) for nlp in nlps]
+      Jmin = minimum(map(norm, Js))
+      for i = 1:N
+        vi = norm(Js[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Js[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        V = jac_nln_coord(nlps[i], x)
+        I, J = jac_nln_structure(nlps[i])
+        @test length(I) == length(J) == length(V) == nlps[i].meta.nln_nnzj
+        @test isapprox(sparse(I, J, V, mnln, n), Js[i], atol = rtol * max(Jmin, 1.0))
+        IS, JS = zeros(Int, nlps[i].meta.nln_nnzj), zeros(Int, nlps[i].meta.nln_nnzj)
+        jac_nln_structure!(nlps[i], IS, JS)
+        @test IS == I
+        @test JS == J
+        tmp_V = zeros(nlps[i].meta.nln_nnzj)
+        jac_nln_coord!(nlps[i], x, tmp_V)
         @test tmp_V == V
       end
     end
@@ -345,6 +462,68 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
       end
     end
 
+    if (!(jprod in exclude)) && test_lin
+      Jlinops = Any[jac_lin_op(nlp, x) for nlp in nlps]
+      Jps = Any[jprod_lin(nlp, x, v) for nlp in nlps]
+      for i = 1:N
+        @test isapprox(Jps[i], Jlinops[i] * v, atol = rtol * max(Jmin, 1.0))
+        vi = norm(Jps[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jps[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        tmpjv = jprod_lin!(nlps[i], x, v, tmp_mlin)
+        @test isapprox(tmpjv, tmp_mlin, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(Jps[i], tmp_mlin, atol = rtol * max(Jmin, 1.0))
+        fill!(tmp_mlin, 0)
+        J = jac_lin_op!(nlps[i], x, tmp_mlin, tmp_n)
+        res = J * v
+        @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_mlin, atol = rtol * max(Jmin, 1.0))
+
+        if !(jac_coord in exclude)
+          rows, cols = jac_lin_structure(nlps[i])
+          vals = jac_lin_coord(nlps[i], x)
+          jprod_lin!(nlps[i], rows, cols, vals, v, tmp_mlin)
+          @test isapprox(Jps[i], tmp_mlin, atol = rtol * max(Jmin, 1.0))
+
+          J = jac_lin_op!(nlps[i], rows, cols, vals, tmp_mlin, tmp_n)
+          res = J * v
+          @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+        end
+      end
+    end
+
+    if (!(jprod in exclude)) && test_nln
+      Jnlnops = Any[jac_nln_op(nlp, x) for nlp in nlps]
+      Jps = Any[jprod_nln(nlp, x, v) for nlp in nlps]
+      for i = 1:N
+        @test isapprox(Jps[i], Jnlnops[i] * v, atol = rtol * max(Jmin, 1.0))
+        vi = norm(Jps[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jps[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        tmpjv = jprod_nln!(nlps[i], x, v, tmp_mnln)
+        @test isapprox(tmpjv, tmp_mnln, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(Jps[i], tmp_mnln, atol = rtol * max(Jmin, 1.0))
+        fill!(tmp_mnln, 0)
+        J = jac_nln_op!(nlps[i], x, tmp_mnln, tmp_n)
+        res = J * v
+        @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_mnln, atol = rtol * max(Jmin, 1.0))
+
+        if !(jac_coord in exclude)
+          rows, cols = jac_nln_structure(nlps[i])
+          vals = jac_nln_coord(nlps[i], x)
+          jprod_nln!(nlps[i], rows, cols, vals, v, tmp_mnln)
+          @test isapprox(Jps[i], tmp_mnln, atol = rtol * max(Jmin, 1.0))
+
+          J = jac_nln_op!(nlps[i], rows, cols, vals, tmp_mnln, tmp_n)
+          res = J * v
+          @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+        end
+      end
+    end
+
     if !(jtprod in exclude)
       w = 10 * [-(-1.0)^i for i = 1:m]
       Jtps = Any[jtprod(nlp, x, w) for nlp in nlps]
@@ -370,6 +549,68 @@ function consistent_functions(nlps; rtol = 1.0e-8, exclude = [])
           @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
 
           J = jac_op!(nlps[i], rows, cols, vals, tmp_m, tmp_n)
+          res = J' * w
+          @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+        end
+      end
+    end
+
+    if (!(jtprod in exclude)) && test_lin
+      w = 10 * [-(-1.0)^i for i = 1:mlin]
+      Jtps = Any[jtprod_lin(nlp, x, w) for nlp in nlps]
+      for i = 1:N
+        @test isapprox(Jtps[i], Jlinops[i]' * w, atol = rtol * max(Jmin, 1.0))
+        vi = norm(Jtps[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jtps[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        tmpjtv = jtprod_lin!(nlps[i], x, w, tmp_n)
+        @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(tmpjtv, tmp_n, atol = rtol * max(Jmin, 1.0))
+        fill!(tmp_n, 0)
+        J = jac_lin_op!(nlps[i], x, tmp_mlin, tmp_n)
+        res = J' * w
+        @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_n, atol = rtol * max(Jmin, 1.0))
+
+        if !(jac_coord in exclude)
+          rows, cols = jac_lin_structure(nlps[i])
+          vals = jac_lin_coord(nlps[i], x)
+          jtprod_lin!(nlps[i], rows, cols, vals, w, tmp_n)
+          @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+
+          J = jac_lin_op!(nlps[i], rows, cols, vals, tmp_mlin, tmp_n)
+          res = J' * w
+          @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+        end
+      end
+    end
+
+    if (!(jtprod in exclude)) && test_nln
+      w = 10 * [-(-1.0)^i for i = 1:mnln]
+      Jtps = Any[jtprod_nln(nlp, x, w) for nlp in nlps]
+      for i = 1:N
+        @test isapprox(Jtps[i], Jnlnops[i]' * w, atol = rtol * max(Jmin, 1.0))
+        vi = norm(Jtps[i])
+        for j = (i + 1):N
+          @test isapprox(vi, norm(Jtps[j]), atol = rtol * max(Jmin, 1.0))
+        end
+        tmpjtv = jtprod_nln!(nlps[i], x, w, tmp_n)
+        @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+        @test isapprox(tmpjtv, tmp_n, atol = rtol * max(Jmin, 1.0))
+        fill!(tmp_n, 0)
+        J = jac_nln_op!(nlps[i], x, tmp_mnln, tmp_n)
+        res = J' * w
+        @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+        @test isapprox(res, tmp_n, atol = rtol * max(Jmin, 1.0))
+
+        if !(jac_coord in exclude)
+          rows, cols = jac_nln_structure(nlps[i])
+          vals = jac_nln_coord(nlps[i], x)
+          jtprod_nln!(nlps[i], rows, cols, vals, w, tmp_n)
+          @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+
+          J = jac_nln_op!(nlps[i], rows, cols, vals, tmp_mnln, tmp_n)
           res = J' * w
           @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
         end
