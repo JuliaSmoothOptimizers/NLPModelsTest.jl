@@ -8,7 +8,7 @@ export HS14
 ```math
 \\begin{aligned}
 \\min \\quad & (x_1 - 2)^2 + (x_2 - 1)^2 \\\\
-\\text{s. to} \\quad & x_1 - 2x_2 + 1 = 0 \\\\
+\\text{s. to} \\quad & x_1 - 2x_2 = -1 \\\\
 & -\\tfrac{1}{4} x_1^2 - x_2^2 + 1 \\geq 0
 \\end{aligned}
 ```
@@ -26,8 +26,8 @@ function HS14(::Type{T}) where {T}
     nnzh = 2,
     ncon = 2,
     x0 = T[2; 2],
-    lcon = T[0; 0],
-    ucon = T[0; Inf],
+    lcon = T[-1; 0],
+    ucon = T[-1; Inf],
     name = "HS14_manual",
     lin = 1:1,
     lin_nnzj = 2,
@@ -107,7 +107,7 @@ function NLPModels.cons_lin!(nlp::HS14, x::AbstractVector, cx::AbstractVector)
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nlp, :neval_cons_lin)
-  cx .= [x[1] - 2 * x[2] + 1]
+  cx .= [x[1] - 2 * x[2]]
   return cx
 end
 

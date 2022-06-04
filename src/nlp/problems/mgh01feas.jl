@@ -13,7 +13,7 @@ export MGH01Feas
 ```math
 \\begin{aligned}
 \\min \\quad & 0 \\\\
-\\text{s. to} \\quad & 1 - x_1 = 0 \\\\
+\\text{s. to} \\quad & x_1 = 1 \\\\
 & 10 (x_2 - x_1^2) = 0.
 \\end{aligned}
 ```
@@ -31,8 +31,8 @@ function MGH01Feas(::Type{T}) where {T}
     x0 = T[-1.2; 1.0],
     name = "MGH01Feas_manual",
     ncon = 2,
-    lcon = zeros(T, 2),
-    ucon = zeros(T, 2),
+    lcon = T[1; 0],
+    ucon = T[1; 0],
     nnzj = 3,
     nnzh = 1,
     lin = 1:1,
@@ -61,7 +61,7 @@ function NLPModels.cons_lin!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVect
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nls, :neval_cons_lin)
-  cx .= [1 - x[1]]
+  cx .= [x[1]]
   return cx
 end
 
@@ -100,7 +100,7 @@ function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector, vals::Abstr
   @lencheck 2 x
   @lencheck 1 vals
   increment!(nls, :neval_jac_lin)
-  vals .= [-1]
+  vals .= [1]
   return vals
 end
 
@@ -121,7 +121,7 @@ function NLPModels.jprod_lin!(
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_lin)
-  Jv .= [-v[1]]
+  Jv .= [v[1]]
   return Jv
 end
 
@@ -147,7 +147,7 @@ function NLPModels.jtprod_lin!(
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nls, :neval_jtprod_lin)
-  Jtv .= [-v[1]; 0]
+  Jtv .= [v[1]; 0]
   return Jtv
 end
 
