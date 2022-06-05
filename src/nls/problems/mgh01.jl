@@ -1,6 +1,6 @@
-export MGH01, MGH01_special
+export MGH01 # , MGH01_special
 
-MGH01_special() = FeasibilityResidual(MGH01Feas())
+# MGH01_special() = FeasibilityResidual(MGH01Feas())
 
 """
     nls = MGH01()
