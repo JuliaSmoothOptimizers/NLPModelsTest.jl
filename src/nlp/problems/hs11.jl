@@ -8,7 +8,7 @@ export HS11
 ```math
 \\begin{aligned}
 \\min \\quad & (x_1 - 5)^2 + x_2^2 - 25 \\\\
-\\text{s. to} \\quad & -x_1^2 + x_2 \\leq 0
+\\text{s. to} \\quad & 0 \\leq -x_1^2 + x_2
 \\end{aligned}
 ```
 
@@ -26,8 +26,8 @@ function HS11(::Type{T}) where {T}
     nnzh = 2,
     nnzj = 2,
     x0 = T[4.9; 0.1],
-    lcon = T[-Inf],
-    ucon = T[0],
+    lcon = T[0],
+    ucon = T[Inf],
     name = "HS11_manual",
   )
 
