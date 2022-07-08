@@ -453,11 +453,11 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
           rows, cols = jac_structure(nlps[i])
           vals = jac_coord(nlps[i], x)
           jprod!(nlps[i], rows, cols, vals, v, tmp_m)
-          @test isapprox(Jps[i], tmp_m, atol = rtol * max(Jmin, 1.0))
+          @test isapprox(norm(Jps[i]), norm(tmp_m), atol = rtol * max(Jmin, 1.0))
 
           J = jac_op!(nlps[i], rows, cols, vals, tmp_m, tmp_n)
           res = J * v
-          @test isapprox(res, Jps[i], atol = rtol * max(Jmin, 1.0))
+          @test isapprox(norm(res), norm(Jps[i]), atol = rtol * max(Jmin, 1.0))
         end
       end
     end
@@ -546,11 +546,11 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
           rows, cols = jac_structure(nlps[i])
           vals = jac_coord(nlps[i], x)
           jtprod!(nlps[i], rows, cols, vals, w, tmp_n)
-          @test isapprox(Jtps[i], tmp_n, atol = rtol * max(Jmin, 1.0))
+          @test isapprox(norm(Jtps[i]), norm(tmp_n), atol = rtol * max(Jmin, 1.0))
 
           J = jac_op!(nlps[i], rows, cols, vals, tmp_m, tmp_n)
           res = J' * w
-          @test isapprox(res, Jtps[i], atol = rtol * max(Jmin, 1.0))
+          @test isapprox(norm(res), norm(Jtps[i]), atol = rtol * max(Jmin, 1.0))
         end
       end
     end
