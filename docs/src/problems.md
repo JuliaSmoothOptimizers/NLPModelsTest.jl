@@ -8,6 +8,7 @@ We have implemented a few problems to be used with the consistency checks, expla
   - [`HS6`](@ref)
   - [`HS10`](@ref)
   - [`HS11`](@ref)
+  - [`HS13`](@ref)
   - [`HS14`](@ref)
   - [`LINCON`](@ref)
   - [`LINSV`](@ref)
