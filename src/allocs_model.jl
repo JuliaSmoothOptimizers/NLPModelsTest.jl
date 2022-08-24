@@ -38,18 +38,18 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     nlp_allocations[:grad!] = @allocated grad!(nlp, x, g)
   end
   if !(hess in exclude)
-    rows = Vector{Int}(undef, get_nnzh(nlp))
-    cols = Vector{Int}(undef, get_nnzh(nlp))
+    rows = Vector{Int}(undef, nlp.meta.nnzh)
+    cols = Vector{Int}(undef, nlp.meta.nnzh)
     hess_structure!(nlp, rows, cols)
     nlp_allocations[:hess_structure!] = @allocated hess_structure!(nlp, rows, cols)
     x = get_x0(nlp)
-    vals = Vector{eltype(x)}(undef, get_nnzh(nlp))
+    vals = Vector{eltype(x)}(undef, nlp.meta.nnzh)
     hess_coord!(nlp, x, vals)
     nlp_allocations[:hess_coord!] = @allocated hess_coord!(nlp, x, vals)
     if get_ncon(nlp) > 0
-        y = get_y0(nlp)
-        hess_coord!(nlp, x, y, vals)
-        nlp_allocations[:hess_lag_coord!] = @allocated hess_coord!(nlp, x, y, vals)
+      y = get_y0(nlp)
+      hess_coord!(nlp, x, y, vals)
+      nlp_allocations[:hess_lag_coord!] = @allocated hess_coord!(nlp, x, y, vals)
     end
   end
   if !(hess_op in exclude)
@@ -59,9 +59,9 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     hess_op!(nlp, x, Hv)
     nlp_allocations[:hess_op!] = @allocated hess_op!(nlp, x, Hv)
     if get_ncon(nlp) > 0
-        y = get_y0(nlp)
-        hess_op!(nlp, x, y, Hv)
-        nlp_allocations[:hess_lag_op!] = @allocated hess_op!(nlp, x, y, Hv)
+      y = get_y0(nlp)
+      hess_op!(nlp, x, y, Hv)
+      nlp_allocations[:hess_lag_op!] = @allocated hess_op!(nlp, x, y, Hv)
     end
     # Then, we test the product
     v = copy(x)
@@ -69,10 +69,10 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     H * v
     nlp_allocations[:hess_op_prod!] = @allocated H * v
     if get_ncon(nlp) > 0
-        y = get_y0(nlp)
-        H = hess_op!(nlp, x, y, Hv)
-        H * v
-        nlp_allocations[:hess_lag_op_prod!] = @allocated H * v
+      y = get_y0(nlp)
+      H = hess_op!(nlp, x, y, Hv)
+      H * v
+      nlp_allocations[:hess_lag_op_prod!] = @allocated H * v
     end
   end
 
@@ -83,12 +83,12 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     nlp_allocations[:cons!] = @allocated cons!(nlp, x, c)
   end
   if get_ncon(nlp) > 0 && !(jac in exclude)
-    rows = Vector{Int}(undef, get_nnzj(nlp))
-    cols = Vector{Int}(undef, get_nnzj(nlp))
+    rows = Vector{Int}(undef, nlp.meta.nnzj)
+    cols = Vector{Int}(undef, nlp.meta.nnzj)
     jac_structure!(nlp, rows, cols)
     nlp_allocations[:jac_structure!] = @allocated jac_structure!(nlp, rows, cols)
     x = get_x0(nlp)
-    vals = Vector{eltype(x)}(undef, get_nnzj(nlp))
+    vals = Vector{eltype(x)}(undef, nlp.meta.nnzj)
     jac_coord!(nlp, x, vals)
     nlp_allocations[:jac_coord!] = @allocated jac_coord!(nlp, x, vals)
   end
@@ -127,13 +127,13 @@ function print_nlp_allocations(nlp::AbstractNLPModel, table::Dict)
 end
 
 function print_nlp_allocations(io, nlp::AbstractNLPModel, table::Dict)
-    for k in keys(table)
-        if isnan(table[k])
-            pop!(table, k)
-        end
+  for k in keys(table)
+    if isnan(table[k])
+      pop!(table, k)
     end
-    println(io, "  Problem name: $(get_name(nlp))")
-    lines = NLPModels.lines_of_hist(keys(table), values(table))
-    println(io, join(lines, "\n") * "\n")
-    return table
+  end
+  println(io, "  Problem name: $(get_name(nlp))")
+  lines = NLPModels.lines_of_hist(keys(table), values(table))
+  println(io, join(lines, "\n") * "\n")
+  return table
 end
