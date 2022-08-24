@@ -1,7 +1,7 @@
 module NLPModelsTest
 
 #stdlib
-using LinearAlgebra, SparseArrays, Test
+using LinearAlgebra, Printf, SparseArrays, Test
 #jso
 using NLPModels, NLPModelsModifiers
 
@@ -25,5 +25,7 @@ for f in ["check-dimensions", "consistency", "multiple-precision", "view-subarra
   include("nls/$f.jl")
 end
 include("nlp/coord-memory.jl")
+
+include("allocs_model.jl")
 
 end

@@ -50,4 +50,8 @@ end
 pmap(nlp_tests, NLPModelsTest.nlp_problems)
 pmap(nls_tests, NLPModelsTest.nls_problems)
 
+io = IOBuffer();
+map(nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp)), map(x -> eval(Symbol(x))(), NLPModelsTest.nlp_problems))
+map(nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp)), map(x -> eval(Symbol(x))(), NLPModelsTest.nls_problems))
+
 rmprocs()
