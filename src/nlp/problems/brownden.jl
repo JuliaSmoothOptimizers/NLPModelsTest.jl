@@ -82,9 +82,12 @@ function NLPModels.hess_structure!(
 )
   @lencheck 10 rows cols
   n = nlp.meta.nvar
-  I = ((i, j) for i = 1:n, j = 1:n if i ≥ j)
-  rows .= getindex.(I, 1)
-  cols .= getindex.(I, 2)
+  k = 0
+  for j = 1:n, i = j:n
+      k += 1
+      rows[k] = i
+      cols[k] = j
+  end
   return rows, cols
 end
 
