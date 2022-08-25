@@ -49,8 +49,10 @@ function NLPModels.grad!(nlp::BROWNDEN, x::AbstractVector, gx::AbstractVector)
   α(x, i) = x[1] + x[2] * i / 5 - exp(i / 5)
   β(x, i) = x[3] + x[4] * sin(i / 5) - cos(i / 5)
   θ(x, i) = α(x, i)^2 + β(x, i)^2
-  gx .=
-    sum(4 * θ(x, i) * (α(x, i) * [1; i / 5; 0; 0] + β(x, i) * [0; 0; 1; sin(i / 5)]) for i = 1:20)
+  gx[1] = sum(4 * θ(x, i) * (α(x, i)) for i = 1:20)
+  gx[2] = sum(4 * θ(x, i) * (α(x, i) * i / 5) for i = 1:20)
+  gx[3] = sum(4 * θ(x, i) * (β(x, i)) for i = 1:20)
+  gx[4] = sum(4 * θ(x, i) * (β(x, i) * sin(i / 5)) for i = 1:20)
   return gx
 end
 
