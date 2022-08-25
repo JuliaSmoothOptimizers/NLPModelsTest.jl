@@ -13,6 +13,7 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     :grad! => NaN,
     :hess_structure! => NaN,
     :hess_coord! => NaN,
+    :hprod! => NaN,
     :hess_op! => NaN,
     :hess_op_prod! => NaN,
     :cons! => NaN,
@@ -22,6 +23,7 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
     :jac_op_prod! => NaN,
     :jac_op_transpose_prod! => NaN,
     :hess_lag_coord! => NaN,
+    :hprod_lag! => NaN,
     :hess_lag_op! => NaN,
     :hess_lag_op_prod! => NaN,
   )
@@ -50,6 +52,18 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; exclude = [])
       y = get_y0(nlp)
       hess_coord!(nlp, x, y, vals)
       nlp_allocations[:hess_lag_coord!] = @allocated hess_coord!(nlp, x, y, vals)
+    end
+  end
+  if !(hprod in exclude)
+    x = get_x0(nlp)
+    v = copy(x)
+    Hv = similar(x)
+    hprod!(nlp, x, v, Hv)
+    nlp_allocations[:hprod!] = @allocated hprod!(nlp, x, v, Hv)
+    if get_ncon(nlp) > 0
+      y = get_y0(nlp)
+      hprod!(nlp, x, y, v, Hv)
+      nlp_allocations[:hprod_lag!] = @allocated hprod!(nlp, x, y, v, Hv)
     end
   end
   if !(hess_op in exclude)
