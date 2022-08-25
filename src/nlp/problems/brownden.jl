@@ -84,9 +84,9 @@ function NLPModels.hess_structure!(
   n = nlp.meta.nvar
   k = 0
   for j = 1:n, i = j:n
-      k += 1
-      rows[k] = i
-      cols[k] = j
+    k += 1
+    rows[k] = i
+    cols[k] = j
   end
   return rows, cols
 end
