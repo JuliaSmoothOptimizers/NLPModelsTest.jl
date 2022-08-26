@@ -47,7 +47,8 @@ end
 function NLPModels.grad!(nlp::HS14, x::AbstractVector, gx::AbstractVector)
   @lencheck 2 x gx
   increment!(nlp, :neval_grad)
-  gx .= [2 * (x[1] - 2); 2 * (x[2] - 1)]
+  gx[1] = 2 * (x[1] - 2)
+  gx[2] = 2 * (x[2] - 1)
   return gx
 end
 
@@ -70,6 +71,19 @@ function NLPModels.hess_coord!(
   increment!(nlp, :neval_hess)
   vals .= 2obj_weight
   return vals
+end
+
+function NLPModels.hprod!(
+  nlp::HS14,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
+  @lencheck 2 x v Hv
+  increment!(nlp, :neval_hprod)
+  Hv .= 2obj_weight .* v
+  return Hv
 end
 
 function NLPModels.hess_coord!(
@@ -97,7 +111,7 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x y v Hv
   increment!(nlp, :neval_hprod)
-  Hv .= 2obj_weight * v
+  Hv .= 2obj_weight .* v
   Hv[1] -= y[2] * v[1] / 2
   Hv[2] -= 2y[2] * v[2]
   return Hv
@@ -107,7 +121,7 @@ function NLPModels.cons_lin!(nlp::HS14, x::AbstractVector, cx::AbstractVector)
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nlp, :neval_cons_lin)
-  cx .= [x[1] - 2 * x[2]]
+  cx[1] = x[1] - 2 * x[2]
   return cx
 end
 
@@ -115,7 +129,7 @@ function NLPModels.cons_nln!(nlp::HS14, x::AbstractVector, cx::AbstractVector)
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nlp, :neval_cons_nln)
-  cx .= [-x[1]^2 / 4 - x[2]^2 + 1]
+  cx[1] = -x[1]^2 / 4 - x[2]^2 + 1
   return cx
 end
 
@@ -125,8 +139,10 @@ function NLPModels.jac_lin_structure!(
   cols::AbstractVector{Int},
 )
   @lencheck 2 rows cols
-  rows .= [1, 1]
-  cols .= [1, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 1
+  cols[2] = 2
   return rows, cols
 end
 
@@ -136,16 +152,19 @@ function NLPModels.jac_nln_structure!(
   cols::AbstractVector{Int},
 )
   @lencheck 2 rows cols
-  rows .= [1, 1]
-  cols .= [1, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 1
+  cols[2] = 2
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nlp::HS14, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nlp::HS14, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x
   @lencheck 2 vals
   increment!(nlp, :neval_jac_lin)
-  vals .= [1, -2]
+  vals[1] = T(1)
+  vals[2] = T(-2)
   return vals
 end
 
@@ -153,7 +172,8 @@ function NLPModels.jac_nln_coord!(nlp::HS14, x::AbstractVector, vals::AbstractVe
   @lencheck 2 x
   @lencheck 2 vals
   increment!(nlp, :neval_jac_nln)
-  vals .= [-x[1] / 2, -2 * x[2]]
+  vals[1] = -x[1] / 2
+  vals[2] = -2 * x[2]
   return vals
 end
 
@@ -161,7 +181,7 @@ function NLPModels.jprod_lin!(nlp::HS14, x::AbstractVector, v::AbstractVector, J
   @lencheck 1 Jv
   @lencheck 2 x v
   increment!(nlp, :neval_jprod_lin)
-  Jv .= [v[1] - 2 * v[2]]
+  Jv[1] = v[1] - 2 * v[2]
   return Jv
 end
 
@@ -169,7 +189,7 @@ function NLPModels.jprod_nln!(nlp::HS14, x::AbstractVector, v::AbstractVector, J
   @lencheck 1 Jv
   @lencheck 2 x v
   increment!(nlp, :neval_jprod_nln)
-  Jv .= [-x[1] * v[1] / 2 - 2 * x[2] * v[2]]
+  Jv[1] = -x[1] * v[1] / 2 - 2 * x[2] * v[2]
   return Jv
 end
 
@@ -177,7 +197,8 @@ function NLPModels.jtprod_lin!(nlp::HS14, x::AbstractVector, v::AbstractVector, 
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nlp, :neval_jtprod_lin)
-  Jtv .= [v[1]; -2 * v[1]]
+  Jtv[1] = v[1]
+  Jtv[2] = -2 * v[1]
   return Jtv
 end
 
@@ -185,7 +206,8 @@ function NLPModels.jtprod_nln!(nlp::HS14, x::AbstractVector, v::AbstractVector, 
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nlp, :neval_jtprod_nln)
-  Jtv .= [-x[1] * v[1] / 2; -2 * x[2] * v[1]]
+  Jtv[1] = -x[1] * v[1] / 2
+  Jtv[2] = -2 * x[2] * v[1]
   return Jtv
 end
 
@@ -237,6 +259,7 @@ function NLPModels.ghjvprod!(
   @lencheck nlp.meta.nvar x g v
   @lencheck nlp.meta.ncon gHv
   increment!(nlp, :neval_hprod)
-  gHv .= [T(0); -g[1] * v[1] / 2 - 2 * g[2] * v[2]]
+  gHv[1] = T(0)
+  gHv[2] = -g[1] * v[1] / 2 - 2 * g[2] * v[2]
   return gHv
 end
