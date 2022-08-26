@@ -47,7 +47,8 @@ end
 function NLPModels.grad!(nlp::HS13, x::AbstractVector{T}, gx::AbstractVector{T}) where {T}
   @lencheck 2 x gx
   increment!(nlp, :neval_grad)
-  gx .= T[2 * (x[1] - 2); 2 * x[2]]
+  gx[1] = 2 * (x[1] - 2)
+  gx[2] = 2 * x[2]
   return gx
 end
 
@@ -69,7 +70,8 @@ function NLPModels.hess_coord!(
   @lencheck 2 x
   @lencheck 2 vals
   increment!(nlp, :neval_hess)
-  vals .= obj_weight .* T[2; 2]
+  vals[1] = obj_weight * 2
+  vals[2] = obj_weight * 2
   return vals
 end
 
@@ -84,7 +86,8 @@ function NLPModels.hess_coord!(
   @lencheck 1 y
   @lencheck 2 vals
   increment!(nlp, :neval_hess)
-  vals .= obj_weight .* T[2; 2] + T[6 * (1 - x[1]); 0] * y[1]
+  vals[1] = obj_weight * 2 + 6 * (1 - x[1]) * y[1]
+  vals[2] = obj_weight * 2
   return vals
 end
 
@@ -97,7 +100,8 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nlp, :neval_hprod)
-  Hv .= obj_weight .* T[2 * v[1]; 2 * v[2]]
+  Hv[1] = 2 * v[1] * obj_weight
+  Hv[2] = 2 * v[2] * obj_weight
   return Hv
 end
 
@@ -112,7 +116,8 @@ function NLPModels.hprod!(
   @lencheck 2 x v Hv
   @lencheck 1 y
   increment!(nlp, :neval_hprod)
-  Hv .= obj_weight .* T[2 * v[1]; 2 * v[2]] + T[6 * (1 - x[1]) * y[1] * v[1]; 0]
+  Hv[1] = 2 * v[1] * obj_weight + 6 * (1 - x[1]) * y[1] * v[1]
+  Hv[2] = 2 * v[2] * obj_weight
   return Hv
 end
 
@@ -120,7 +125,7 @@ function NLPModels.cons_nln!(nlp::HS13, x::AbstractVector, cx::AbstractVector)
   @lencheck 2 x
   @lencheck 1 cx
   increment!(nlp, :neval_cons_nln)
-  cx .= [(1 - x[1])^3 - x[2]]
+  cx[1] = (1 - x[1])^3 - x[2]
   return cx
 end
 
@@ -130,15 +135,18 @@ function NLPModels.jac_nln_structure!(
   cols::AbstractVector{Int},
 )
   @lencheck 2 rows cols
-  rows .= [1, 1]
-  cols .= [1, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 1
+  cols[2] = 2
   return rows, cols
 end
 
 function NLPModels.jac_nln_coord!(nlp::HS13, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x vals
   increment!(nlp, :neval_jac_nln)
-  vals .= T[-3 * (1 - x[1])^2; -1]
+  vals[1] = -3 * (1 - x[1])^2
+  vals[2] = -one(T)
   return vals
 end
 
@@ -159,7 +167,8 @@ function NLPModels.jtprod_nln!(
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nlp, :neval_jtprod_nln)
-  Jtv .= T[-3 * (1 - x[1])^2; -1] * v[1]
+  Jtv[1] = -3 * (1 - x[1])^2 * v[1]
+  Jtv[2] = -v[1]
   return Jtv
 end
 
@@ -173,7 +182,8 @@ function NLPModels.jth_hprod!(
   @lencheck 2 x v Hv
   @rangecheck 1 1 j
   NLPModels.increment!(nlp, :neval_jhprod)
-  Hv .= [6 * (1 - x[1]) * v[1]; 0]
+  Hv[1] = 6 * (1 - x[1]) * v[1]
+  Hv[2] = zero(T)
   return Hv
 end
 
@@ -187,7 +197,8 @@ function NLPModels.jth_hess_coord!(
   @lencheck 2 x
   @rangecheck 1 1 j
   NLPModels.increment!(nlp, :neval_jhess)
-  vals .= T[6 * (1 - x[1]); 0]
+  vals[1] = 6 * (1 - x[1])
+  vals[2] = zero(T)
   return vals
 end
 
@@ -201,6 +212,6 @@ function NLPModels.ghjvprod!(
   @lencheck nlp.meta.nvar x g v
   @lencheck nlp.meta.ncon gHv
   increment!(nlp, :neval_hprod)
-  gHv .= T[g[1] * 6 * (1 - x[1]) * v[1]]
+  gHv[1] = g[1] * 6 * (1 - x[1]) * v[1]
   return gHv
 end
