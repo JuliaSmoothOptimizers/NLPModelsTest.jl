@@ -248,7 +248,7 @@ function NLPModels.jth_hprod!(
   if j == 1
     Hv .= zero(T)
   elseif j == 2
-    Hv[1] = -v[1]
+    Hv[1] = -20v[1]
     Hv[2] = zero(T)
   end
   return Hv
