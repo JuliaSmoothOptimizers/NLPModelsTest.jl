@@ -80,6 +80,7 @@ function NLPModels.hess_coord!(
 ) where {T}
   @lencheck 4 x
   @lencheck 10 vals
+  increment!(nlp, :neval_hess)
   α(x, i) = x[1] + x[2] * i / 5 - exp(i / 5)
   dα(x, i) = i / 5
   β(x, i) = x[3] + x[4] * sin(i / 5) - cos(i / 5)
