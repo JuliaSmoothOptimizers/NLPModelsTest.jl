@@ -158,8 +158,8 @@ function NLPModels.jtprod_nln!(nlp::HS10, x::AbstractVector, v::AbstractVector, 
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nlp, :neval_jtprod_nln)
-  Jtv[1] = -6 * x[1] + 2 * x[2] * v[1]
-  Jtv[2] = 2 * x[1] - 2 * x[2] * v[1]
+  Jtv[1] = (-6 * x[1] + 2 * x[2]) * v[1]
+  Jtv[2] = (2 * x[1] - 2 * x[2]) * v[1]
   return Jtv
 end
 
