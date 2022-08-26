@@ -57,7 +57,9 @@ end
 function NLPModels.grad!(nlp::LINCON, x::AbstractVector, gx::AbstractVector)
   @lencheck 15 x gx
   increment!(nlp, :neval_grad)
-  gx .= [4 * x[i]^3 for i = 1:(nlp.meta.nvar)]
+  for i = 1:(nlp.meta.nvar)
+    gx[i] = 4 * x[i]^3
+  end
   return gx
 end
 
@@ -86,6 +88,21 @@ function NLPModels.hess_coord!(
     vals[i] = 12 * obj_weight * x[i]^2
   end
   return vals
+end
+
+function NLPModels.hprod!(
+  nlp::LINCON,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
+  @lencheck 15 x v Hv
+  increment!(nlp, :neval_hprod)
+  for i = 1:(nlp.meta.nvar)
+    Hv[i] = 12 * obj_weight * x[i]^2 * v[i]
+  end
+  return Hv
 end
 
 function NLPModels.hess_coord!(
@@ -121,15 +138,17 @@ function NLPModels.cons_lin!(nlp::LINCON, x::AbstractVector, cx::AbstractVector)
   @lencheck 15 x
   @lencheck 11 cx
   increment!(nlp, :neval_cons_lin)
-  cx .= [
-    15 * x[15]
-    [1; 2; 3]' * x[10:12]
-    [1; -1]' * x[13:14]
-    [5; 6]' * x[8:9]
-    [0 -2; 4 0] * x[6:7]
-    [1 2; 3 4] * x[1:2]
-    diagm([3 * i for i = 3:5]) * x[3:5]
-  ]
+  cx[1] = 15 * x[15]
+  cx[2] = x[10] + 2 * x[11] + 3 * x[12]
+  cx[3] = x[13] - x[14]
+  cx[4] = 5 * x[8] + 6 * x[9]
+  cx[5] = -2 * x[7]
+  cx[6] = 4 * x[6]
+  cx[7] = x[1] + 2 * x[2]
+  cx[8] = 3 * x[1] + 4 * x[2]
+  cx[9] = 9 * x[3]
+  cx[10] = 12 * x[4]
+  cx[11] = 15 * x[5]
   return cx
 end
 
@@ -139,16 +158,64 @@ function NLPModels.jac_lin_structure!(
   cols::AbstractVector{Int},
 )
   @lencheck 17 rows cols
-  rows .= [1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 7, 7, 8, 8, 9, 10, 11]
-  cols .= [15, 10, 11, 12, 13, 14, 8, 9, 7, 6, 1, 2, 1, 2, 3, 4, 5]
+  rows[1] = 1
+  rows[2] = 2
+  rows[3] = 2
+  rows[4] = 2
+  rows[5] = 3
+  rows[6] = 3
+  rows[7] = 4
+  rows[8] = 4
+  rows[9] = 5
+  rows[10] = 6
+  rows[11] = 7
+  rows[12] = 7
+  rows[13] = 8
+  rows[14] = 8
+  rows[15] = 9
+  rows[16] = 10
+  rows[17] = 11
+  cols[1] = 15
+  cols[2] = 10
+  cols[3] = 11
+  cols[4] = 12
+  cols[5] = 13
+  cols[6] = 14
+  cols[7] = 8
+  cols[8] = 9
+  cols[9] = 7
+  cols[10] = 6
+  cols[11] = 1
+  cols[12] = 2
+  cols[13] = 1
+  cols[14] = 2
+  cols[15] = 3
+  cols[16] = 4
+  cols[17] = 5
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nlp::LINCON, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nlp::LINCON, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 15 x
   @lencheck 17 vals
   increment!(nlp, :neval_jac_lin)
-  vals .= eltype(x).([15, 1, 2, 3, 1, -1, 5, 6, -2, 4, 1, 2, 3, 4, 9, 12, 15])
+  vals[1] = T(15)
+  vals[2] = T(1)
+  vals[3] = T(2)
+  vals[4] = T(3)
+  vals[5] = T(1)
+  vals[6] = T(-1)
+  vals[7] = T(5)
+  vals[8] = T(6)
+  vals[9] = T(-2)
+  vals[10] = T(4)
+  vals[11] = T(1)
+  vals[12] = T(2)
+  vals[13] = T(3)
+  vals[14] = T(4)
+  vals[15] = T(9)
+  vals[16] = T(12)
+  vals[17] = T(15)
   return vals
 end
 
@@ -157,12 +224,16 @@ function NLPModels.jprod_lin!(nlp::LINCON, x::AbstractVector, v::AbstractVector,
   @lencheck 11 Jv
   increment!(nlp, :neval_jprod_lin)
   Jv[1] = 15 * v[15]
-  Jv[2] = [1; 2; 3]' * v[10:12]
-  Jv[3] = [1; -1]' * v[13:14]
-  Jv[4] = [5; 6]' * v[8:9]
-  Jv[5:6] = [0 -2; 4 0] * v[6:7]
-  Jv[7:8] = [1.0 2; 3 4] * v[1:2]
-  Jv[9:11] = diagm([3 * i for i = 3:5]) * v[3:5]
+  Jv[2] = v[10] + 2 * v[11] + 3 * v[12]
+  Jv[3] = v[13] - v[14]
+  Jv[4] = 5 * v[8] + 6 * v[9]
+  Jv[5] = -2 * v[7]
+  Jv[6] = 4 * v[6]
+  Jv[7] = v[1] + 2 * v[2]
+  Jv[8] = 3 * v[1] + 4 * v[2]
+  Jv[9] = 9 * v[3]
+  Jv[10] = 12 * v[4]
+  Jv[11] = 15 * v[5]
   return Jv
 end
 
@@ -231,6 +302,6 @@ function NLPModels.ghjvprod!(
   @lencheck nlp.meta.nvar x g v
   @lencheck nlp.meta.ncon gHv
   increment!(nlp, :neval_hprod)
-  gHv .= zeros(T, nlp.meta.ncon)
+  gHv .= zero(T)
   return gHv
 end
