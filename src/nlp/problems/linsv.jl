@@ -70,6 +70,19 @@ function NLPModels.hess_coord!(
   return vals
 end
 
+function NLPModels.hprod!(
+  nlp::LINSV,
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T};
+  obj_weight = one(T),
+) where {T}
+  @lencheck 2 x v Hv
+  increment!(nlp, :neval_hprod)
+  Hv .= 0
+  return Hv
+end
+
 function NLPModels.hess_coord!(
   nlp::LINSV,
   x::AbstractVector{T},
@@ -100,7 +113,8 @@ end
 function NLPModels.cons_lin!(nlp::LINSV, x::AbstractVector, cx::AbstractVector)
   @lencheck 2 x cx
   increment!(nlp, :neval_cons_lin)
-  cx .= [x[1] + x[2]; x[2]]
+  cx[1] = x[1] + x[2]
+  cx[2] = x[2]
   return cx
 end
 
@@ -110,16 +124,22 @@ function NLPModels.jac_lin_structure!(
   cols::AbstractVector{Int},
 )
   @lencheck 3 rows cols
-  rows .= [1, 1, 2]
-  cols .= [1, 2, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 1
+  cols[2] = 2
+  rows[3] = 2
+  cols[3] = 2
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nlp::LINSV, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nlp::LINSV, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x
   @lencheck 3 vals
   increment!(nlp, :neval_jac_lin)
-  vals .= eltype(x).([1, 1, 1])
+  vals[1] = T(1)
+  vals[2] = T(1)
+  vals[3] = T(1)
   return vals
 end
 
@@ -182,6 +202,6 @@ function NLPModels.ghjvprod!(
   @lencheck nlp.meta.nvar x g v
   @lencheck nlp.meta.ncon gHv
   increment!(nlp, :neval_hprod)
-  gHv .= zeros(T, nlp.meta.ncon)
+  gHv .= zero(T)
   return gHv
 end
