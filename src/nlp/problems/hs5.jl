@@ -42,14 +42,19 @@ end
 function NLPModels.grad!(nlp::HS5, x::AbstractVector{T}, gx::AbstractVector{T}) where {T}
   @lencheck 2 x gx
   increment!(nlp, :neval_grad)
-  gx .= cos(x[1] + x[2]) * ones(T, 2) + 2 * (x[1] - x[2]) * T[1; -1] + T[-1.5; 2.5]
+  gx[1] = cos(x[1] + x[2]) + 2 * (x[1] - x[2]) + T(-1.5)
+  gx[2] = cos(x[1] + x[2]) - 2 * (x[1] - x[2]) + T(2.5)
   return gx
 end
 
 function NLPModels.hess_structure!(nlp::HS5, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 3 rows cols
-  rows .= [1; 2; 2]
-  cols .= [1; 1; 2]
+  k = 0
+  for j = 1:2, i = j:2
+    k += 1
+    rows[k] = i
+    cols[k] = j
+  end
   return rows, cols
 end
 
@@ -72,7 +77,7 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nlp, :neval_hprod)
-  Hv .=
-    (-sin(x[1] + x[2]) * (v[1] + v[2]) * ones(T, 2) + 2 * [v[1] - v[2]; v[2] - v[1]]) * obj_weight
+  Hv[1] = (-sin(x[1] + x[2]) * (v[1] + v[2]) + 2 * (v[1] - v[2])) * obj_weight
+  Hv[2] = (-sin(x[1] + x[2]) * (v[1] + v[2]) + 2 * (v[2] - v[1])) * obj_weight
   return Hv
 end
