@@ -56,25 +56,6 @@ function NLPModels.grad!(nlp::BROWNDEN, x::AbstractVector, gx::AbstractVector)
   return gx
 end
 
-function NLPModels.hess(nlp::BROWNDEN, x::AbstractVector{T}; obj_weight = 1.0) where {T}
-  @lencheck 4 x
-  increment!(nlp, :neval_hess)
-  α(x, i) = x[1] + x[2] * T(i) / 5 - exp(T(i) / 5)
-  β(x, i) = x[3] + x[4] * sin(T(i) / 5) - cos(T(i) / 5)
-  Hx = zeros(T, 4, 4)
-  if obj_weight == 0
-    return Hx
-  end
-  for i = 1:20
-    αi, βi = α(x, i), β(x, i)
-    vi, wi = T[1; i / 5; 0; 0], T[0; 0; 1; sin(i / 5)]
-    zi = αi * vi + βi * wi
-    θi = αi^2 + βi^2
-    Hx += (4vi * vi' + 4wi * wi') * θi + 8zi * zi'
-  end
-  return Symmetric(T(obj_weight) * Hx, :L)
-end
-
 function NLPModels.hess_structure!(
   nlp::BROWNDEN,
   rows::AbstractVector{Int},
@@ -93,20 +74,32 @@ end
 
 function NLPModels.hess_coord!(
   nlp::BROWNDEN,
-  x::AbstractVector,
+  x::AbstractVector{T},
   vals::AbstractVector;
   obj_weight = 1.0,
-)
+) where {T}
   @lencheck 4 x
   @lencheck 10 vals
-  Hx = hess(nlp, x, obj_weight = obj_weight)
-  k = 1
-  for j = 1:4
-    for i = j:4
-      vals[k] = Hx[i, j]
-      k += 1
-    end
-  end
+  α(x, i) = x[1] + x[2] * i / 5 - exp(i / 5)
+  dα(x, i) = i / 5
+  β(x, i) = x[3] + x[4] * sin(i / 5) - cos(i / 5)
+  dβ(x, i) = sin(i / 5)
+  θ(x, i) = α(x, i)^2 + β(x, i)^2
+  dθ1(x, i) = 2 * α(x, i)
+  dθ2(x, i) = 2 * α(x, i) * dα(x, i)
+  dθ3(x, i) = 2 * β(x, i)
+  dθ4(x, i) = 2 * β(x, i) * dβ(x, i)
+  vals[1] = 4 * sum( θ(x, i) + α(x, i) * dθ1(x, i) for i=1:20)
+  vals[2] = 4 * sum( i/5 * (θ(x, i) + α(x, i) * dθ1(x, i)) for i=1:20)
+  vals[3] = 4 * sum( β(x, i) * dθ1(x, i) for i=1:20)
+  vals[4] = 4 * sum( sin(i/5) * β(x, i) * dθ1(x, i) for i=1:20)
+  vals[5] = 4 * sum( i/5 * (θ(x, i) * dα(x, i) + α(x, i) * dθ2(x, i)) for i=1:20)
+  vals[6] = 4 * sum( β(x, i) * dθ2(x, i) for i=1:20)
+  vals[7] = 4 * sum( sin(i/5) * β(x, i) * dθ2(x, i) for i=1:20)
+  vals[8] = 4 * sum( θ(x, i) + β(x, i) * dθ3(x, i) for i=1:20)
+  vals[9] = 4 * sum( sin(i/5) * (θ(x, i) + β(x, i) * dθ3(x, i)) for i=1:20)
+  vals[10] = 4 * sum( sin(i/5) * (θ(x, i) * dβ(x, i) + β(x, i) * dθ4(x, i)) for i=1:20)
+  vals .*= T(obj_weight)
   return vals
 end
 
