@@ -61,7 +61,7 @@ function NLPModels.cons_lin!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVect
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nls, :neval_cons_lin)
-  cx .= [x[1]]
+  cx[1] = x[1]
   return cx
 end
 
@@ -69,7 +69,7 @@ function NLPModels.cons_nln!(nls::MGH01Feas, x::AbstractVector, cx::AbstractVect
   @lencheck 1 cx
   @lencheck 2 x
   increment!(nls, :neval_cons_nln)
-  cx .= [10 * (x[2] - x[1]^2)]
+  cx[1] = 10 * (x[2] - x[1]^2)
   return cx
 end
 
@@ -80,8 +80,8 @@ function NLPModels.jac_lin_structure!(
   cols::AbstractVector{<:Integer},
 )
   @lencheck 1 rows cols
-  rows .= [1]
-  cols .= [1]
+  rows .= 1
+  cols .= 1
   return rows, cols
 end
 
@@ -91,24 +91,27 @@ function NLPModels.jac_nln_structure!(
   cols::AbstractVector{<:Integer},
 )
   @lencheck 2 rows cols
-  rows .= [1, 1]
-  cols .= [1, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 1
+  cols[2] = 2
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x
   @lencheck 1 vals
   increment!(nls, :neval_jac_lin)
-  vals .= [1]
+  vals .= T(1)
   return vals
 end
 
-function NLPModels.jac_nln_coord!(nls::MGH01Feas, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_nln_coord!(nls::MGH01Feas, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x
   @lencheck 2 vals
   increment!(nls, :neval_jac_nln)
-  vals .= [-20x[1], 10]
+  vals[1] = -20x[1]
+  vals[2] = T(10)
   return vals
 end
 
@@ -121,7 +124,7 @@ function NLPModels.jprod_lin!(
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_lin)
-  Jv .= [v[1]]
+  Jv[1] = v[1]
   return Jv
 end
 
@@ -134,33 +137,35 @@ function NLPModels.jprod_nln!(
   @lencheck 2 x v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_nln)
-  Jv .= [-20 * x[1] * v[1] + 10 * v[2]]
+  Jv[1] = -20 * x[1] * v[1] + 10 * v[2]
   return Jv
 end
 
 function NLPModels.jtprod_lin!(
   nls::MGH01Feas,
-  x::AbstractVector,
+  x::AbstractVector{T},
   v::AbstractVector,
   Jtv::AbstractVector,
-)
+) where {T}
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nls, :neval_jtprod_lin)
-  Jtv .= [v[1]; 0]
+  Jtv[1] = v[1]
+  Jtv[2] = zero(T)
   return Jtv
 end
 
 function NLPModels.jtprod_nln!(
   nls::MGH01Feas,
-  x::AbstractVector,
+  x::AbstractVector{T},
   v::AbstractVector,
   Jtv::AbstractVector,
-)
+) where {T}
   @lencheck 2 x Jtv
   @lencheck 1 v
   increment!(nls, :neval_jtprod_nln)
-  Jtv .= [-20 * x[1] * v[1]; 10 * v[1]]
+  Jtv[1] = -20 * x[1] * v[1]
+  Jtv[2] = 10 * v[1]
   return Jtv
 end
 
@@ -173,6 +178,32 @@ function NLPModels.hess_structure!(
   rows[1] = 1
   cols[1] = 1
   return rows, cols
+end
+
+function NLPModels.hess_coord!(
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  vals::AbstractVector;
+  obj_weight::Real = one(eltype(x)),
+) where {T}
+  @lencheck 2 x
+  @lencheck 1 vals
+  increment!(nls, :neval_hess)
+  vals[1] = zero(T)
+  return vals
+end
+
+function NLPModels.hprod!(
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  v::AbstractVector,
+  Hv::AbstractVector;
+  obj_weight::Real = one(eltype(x)),
+) where {T}
+  @lencheck 2 x v Hv
+  increment!(nls, :neval_hprod)
+  Hv .= zero(T)
+  return Hv
 end
 
 function NLPModels.hess_coord!(
@@ -191,15 +222,16 @@ end
 
 function NLPModels.hprod!(
   nls::MGH01Feas,
-  x::AbstractVector,
+  x::AbstractVector{T},
   y::AbstractVector,
   v::AbstractVector,
   Hv::AbstractVector;
   obj_weight::Real = one(eltype(x)),
-)
+) where {T}
   @lencheck 2 x y v Hv
   increment!(nls, :neval_hprod)
-  Hv .= [-20y[2] * v[1]; 0]
+  Hv[1] = -20y[2] * v[1]
+  Hv[2] = zero(T)
   return Hv
 end
 
@@ -216,7 +248,8 @@ function NLPModels.jth_hprod!(
   if j == 1
     Hv .= zero(T)
   elseif j == 2
-    Hv .= [-20v[1]; zero(T)]
+    Hv[1] = -v[1]
+    Hv[2] = zero(T)
   end
   return Hv
 end
@@ -234,7 +267,7 @@ function NLPModels.jth_hess_coord!(
   if j == 1
     vals .= zero(T)
   elseif j == 2
-    vals .= [T(-20)]
+    vals .= T(-20)
   end
   return vals
 end
@@ -249,6 +282,7 @@ function NLPModels.ghjvprod!(
   @lencheck nls.meta.nvar x g v
   @lencheck nls.meta.ncon gHv
   increment!(nls, :neval_hprod)
-  gHv .= [T(0); -g[1] * 20v[1]]
+  gHv[1] = T(0)
+  gHv[2] = -g[1] * 20v[1]
   return gHv
 end
