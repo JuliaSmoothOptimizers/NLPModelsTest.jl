@@ -52,7 +52,9 @@ function NLPModels.residual!(nls::LLS, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x
   @lencheck 3 Fx
   increment!(nls, :neval_residual)
-  Fx .= [x[1] - x[2]; x[1] + x[2] - 2; x[2] - 2]
+  Fx[1] = x[1] - x[2]
+  Fx[2] = x[1] + x[2] - 2
+  Fx[3] = x[2] - 2
   return Fx
 end
 
@@ -62,17 +64,28 @@ function NLPModels.jac_structure_residual!(
   cols::AbstractVector{<:Integer},
 )
   @lencheck 5 rows cols
-  rows .= [1, 1, 2, 2, 3]
-  cols .= [1, 2, 1, 2, 2]
+  rows[1] = 1
+  rows[2] = 1
+  rows[3] = 2
+  rows[4] = 2
+  rows[5] = 3
+  cols[1] = 1
+  cols[2] = 2
+  cols[3] = 1
+  cols[4] = 2
+  cols[5] = 2
   return rows, cols
 end
 
-function NLPModels.jac_coord_residual!(nls::LLS, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_coord_residual!(nls::LLS, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x
   @lencheck 5 vals
   increment!(nls, :neval_jac_residual)
-  T = eltype(x)
-  vals .= T[1, -1, 1, 1, 1]
+  vals[1] = T(1)
+  vals[2] = T(-1)
+  vals[3] = T(1)
+  vals[4] = T(1)
+  vals[5] = T(1)
   return vals
 end
 
@@ -85,7 +98,9 @@ function NLPModels.jprod_residual!(
   @lencheck 2 x v
   @lencheck 3 Jv
   increment!(nls, :neval_jprod_residual)
-  Jv .= [v[1] - v[2]; v[1] + v[2]; v[2]]
+  Jv[1] = v[1] - v[2]
+  Jv[2] = v[1] + v[2]
+  Jv[3] = v[2]
   return Jv
 end
 
@@ -98,7 +113,8 @@ function NLPModels.jtprod_residual!(
   @lencheck 2 x Jtv
   @lencheck 3 v
   increment!(nls, :neval_jtprod_residual)
-  Jtv .= [v[1] + v[2]; -v[1] + v[2] + v[3]]
+  Jtv[1] = v[1] + v[2]
+  Jtv[2] = -v[1] + v[2] + v[3]
   return Jtv
 end
 
@@ -151,16 +167,17 @@ function NLPModels.jac_lin_structure!(
   cols::AbstractVector{<:Integer},
 )
   @lencheck 2 rows cols
-  rows .= [1, 1]
-  cols .= [1, 2]
+  rows[1] = 1
+  rows[2] = 1
+  cols[1] = 1
+  cols[2] = 2
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nls::LLS, x::AbstractVector, vals::AbstractVector)
+function NLPModels.jac_lin_coord!(nls::LLS, x::AbstractVector{T}, vals::AbstractVector) where {T}
   @lencheck 2 x vals
   increment!(nls, :neval_jac_lin)
-  T = eltype(x)
-  vals .= T[1, 1]
+  vals .= T(1)
   return vals
 end
 
@@ -182,8 +199,10 @@ end
 
 function NLPModels.hess_structure!(nls::LLS, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 2 rows cols
-  rows .= [1, 2]
-  cols .= [1, 2]
+  rows[1] = 1
+  rows[2] = 2
+  cols[1] = 1
+  cols[2] = 2
   return rows, cols
 end
 
@@ -195,7 +214,8 @@ function NLPModels.hess_coord!(
 ) where {T, S}
   @lencheck 2 x
   @lencheck 2 vals
-  vals .= [2obj_weight; 3obj_weight]
+  vals[1] = 2obj_weight
+  vals[2] = 3obj_weight
   return vals
 end
 
@@ -266,6 +286,6 @@ function NLPModels.ghjvprod!(
   @lencheck nls.meta.nvar x g v
   @lencheck nls.meta.ncon gHv
   increment!(nls, :neval_hprod)
-  gHv .= zeros(T, nls.meta.ncon)
+  gHv .= zero(T)
   return gHv
 end
