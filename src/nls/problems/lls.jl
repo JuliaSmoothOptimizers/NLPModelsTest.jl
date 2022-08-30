@@ -77,7 +77,11 @@ function NLPModels.jac_structure_residual!(
   return rows, cols
 end
 
-function NLPModels.jac_coord_residual!(nls::LLS, x::AbstractVector{T}, vals::AbstractVector) where {T}
+function NLPModels.jac_coord_residual!(
+  nls::LLS,
+  x::AbstractVector{T},
+  vals::AbstractVector,
+) where {T}
   @lencheck 2 x
   @lencheck 5 vals
   increment!(nls, :neval_jac_residual)
