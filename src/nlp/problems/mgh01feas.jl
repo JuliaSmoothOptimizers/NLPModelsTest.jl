@@ -98,7 +98,11 @@ function NLPModels.jac_nln_structure!(
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector{T}, vals::AbstractVector) where {T}
+function NLPModels.jac_lin_coord!(
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  vals::AbstractVector,
+) where {T}
   @lencheck 2 x
   @lencheck 1 vals
   increment!(nls, :neval_jac_lin)
@@ -106,7 +110,11 @@ function NLPModels.jac_lin_coord!(nls::MGH01Feas, x::AbstractVector{T}, vals::Ab
   return vals
 end
 
-function NLPModels.jac_nln_coord!(nls::MGH01Feas, x::AbstractVector{T}, vals::AbstractVector) where {T}
+function NLPModels.jac_nln_coord!(
+  nls::MGH01Feas,
+  x::AbstractVector{T},
+  vals::AbstractVector,
+) where {T}
   @lencheck 2 x
   @lencheck 2 vals
   increment!(nls, :neval_jac_nln)

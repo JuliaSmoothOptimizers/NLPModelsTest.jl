@@ -271,8 +271,8 @@ function NLPModels.hess_coord!(
 ) where {T}
   @lencheck 2 x
   @lencheck 3 vals
-  vals[1] = T(1) - 200 * x[2]+600 * x[1]^2
-  vals[2] = -200*x[1]
+  vals[1] = T(1) - 200 * x[2] + 600 * x[1]^2
+  vals[2] = -200 * x[1]
   vals[3] = T(100)
   vals .*= obj_weight
   return vals
@@ -288,9 +288,9 @@ function NLPModels.hess_coord!(
   @lencheck 2 x
   @lencheck 3 y
   @lencheck 3 vals
-  vals[1] = obj_weight*(T(1) - 200 * x[2] + 600 * x[1]^2)+2*y[2]+2*y[3]
-  vals[2] = -obj_weight*200*x[1]
-  vals[3] = obj_weight*T(100)+2*y[1]+2*y[3]
+  vals[1] = obj_weight * (T(1) - 200 * x[2] + 600 * x[1]^2) + 2 * y[2] + 2 * y[3]
+  vals[2] = -obj_weight * 200 * x[1]
+  vals[3] = obj_weight * T(100) + 2 * y[1] + 2 * y[3]
   return vals
 end
 
@@ -303,8 +303,8 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nls, :neval_hprod)
-  Hv[1] = (obj_weight*(T(1) - 200 * x[2] + 600 * x[1]^2)) * v[1] - obj_weight*200*x[1] * v[2]
-  Hv[2] = -obj_weight*200*x[1] * v[1] + (obj_weight*T(100)) * v[2]
+  Hv[1] = (obj_weight * (T(1) - 200 * x[2] + 600 * x[1]^2)) * v[1] - obj_weight * 200 * x[1] * v[2]
+  Hv[2] = -obj_weight * 200 * x[1] * v[1] + (obj_weight * T(100)) * v[2]
   return Hv
 end
 
@@ -318,8 +318,10 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nls, :neval_hprod)
-  Hv[1] = (obj_weight*(T(1) - 200 * x[2] + 600 * x[1]^2)+2*y[2]+2*y[3]) * v[1] - obj_weight*200*x[1] * v[2]
-  Hv[2] = -obj_weight*200*x[1] * v[1] + (obj_weight*T(100)+2*y[1]+2*y[3]) * v[2]
+  Hv[1] =
+    (obj_weight * (T(1) - 200 * x[2] + 600 * x[1]^2) + 2 * y[2] + 2 * y[3]) * v[1] -
+    obj_weight * 200 * x[1] * v[2]
+  Hv[2] = -obj_weight * 200 * x[1] * v[1] + (obj_weight * T(100) + 2 * y[1] + 2 * y[3]) * v[2]
   return Hv
 end
 
