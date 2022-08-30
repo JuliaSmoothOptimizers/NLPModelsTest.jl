@@ -44,7 +44,8 @@ MGH01() = MGH01(Float64)
 function NLPModels.residual!(nls::MGH01, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x Fx
   increment!(nls, :neval_residual)
-  Fx .= [1 - x[1]; 10 * (x[2] - x[1]^2)]
+  Fx[1] = 1 - x[1]
+  Fx[2] = 10 * (x[2] - x[1]^2)
   return Fx
 end
 
@@ -55,8 +56,12 @@ function NLPModels.jac_structure_residual!(
   cols::AbstractVector{<:Integer},
 )
   @lencheck 3 rows cols
-  rows .= [1, 2, 2]
-  cols .= [1, 1, 2]
+  rows[1] = 1
+  cols[1] = 1
+  rows[2] = 2
+  cols[2] = 1
+  rows[3] = 2
+  cols[3] = 2
   return rows, cols
 end
 
@@ -64,7 +69,9 @@ function NLPModels.jac_coord_residual!(nls::MGH01, x::AbstractVector, vals::Abst
   @lencheck 2 x
   @lencheck 3 vals
   increment!(nls, :neval_jac_residual)
-  vals .= [-1, -20x[1], 10]
+  vals[1] = -1
+  vals[2] = -20x[1]
+  vals[3] = 10
   return vals
 end
 
@@ -76,7 +83,8 @@ function NLPModels.jprod_residual!(
 )
   @lencheck 2 x v Jv
   increment!(nls, :neval_jprod_residual)
-  Jv .= [-v[1]; -20 * x[1] * v[1] + 10 * v[2]]
+  Jv[1] = -v[1]
+  Jv[2] = -20 * x[1] * v[1] + 10 * v[2]
   return Jv
 end
 
@@ -88,7 +96,8 @@ function NLPModels.jtprod_residual!(
 )
   @lencheck 2 x v Jtv
   increment!(nls, :neval_jtprod_residual)
-  Jtv .= [-v[1] - 20 * x[1] * v[2]; 10 * v[2]]
+  Jtv[1] = -v[1] - 20 * x[1] * v[2]
+  Jtv[2] = 10 * v[2]
   return Jtv
 end
 
@@ -126,44 +135,38 @@ function NLPModels.hprod_residual!(
   @lencheck 2 x v Hiv
   increment!(nls, :neval_hprod_residual)
   if i == 2
-    Hiv .= [-20v[1]; 0]
+    Hiv[1] = -20v[1]
+    Hiv[2] = zero(eltype(x))
   else
     Hiv .= zero(eltype(x))
   end
   return Hiv
 end
 
-function NLPModels.hess(nls::MGH01, x::AbstractVector{T}; obj_weight = 1.0) where {T}
-  @lencheck 2 x
-  increment!(nls, :neval_hess)
-  return Symmetric(obj_weight * [T(1) - 200 * x[2]+600 * x[1]^2 T(0); -200*x[1] T(100)], :L)
-end
-
 function NLPModels.hess_structure!(nls::MGH01, rows::AbstractVector{Int}, cols::AbstractVector{Int})
   @lencheck 3 rows cols
   n = nls.meta.nvar
-  I = ((i, j) for i = 1:n, j = 1:n if i ≥ j)
-  rows .= getindex.(I, 1)
-  cols .= getindex.(I, 2)
+  k = 0
+  for j = 1:n, i = j:n
+    k += 1
+    rows[k] = i
+    cols[k] = j
+  end
   return rows, cols
 end
 
 function NLPModels.hess_coord!(
   nls::MGH01,
-  x::AbstractVector,
+  x::AbstractVector{T},
   vals::AbstractVector;
-  obj_weight = 1.0,
-)
+  obj_weight = one(T),
+) where {T}
   @lencheck 2 x
   @lencheck 3 vals
-  Hx = hess(nls, x, obj_weight = obj_weight)
-  k = 1
-  for j = 1:2
-    for i = j:2
-      vals[k] = Hx[i, j]
-      k += 1
-    end
-  end
+  vals[1] = T(1) - 200 * x[2]+600 * x[1]^2
+  vals[2] = -200*x[1]
+  vals[3] = T(100)
+  vals .*= obj_weight
   return vals
 end
 
@@ -176,6 +179,7 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nls, :neval_hprod)
-  Hv .= obj_weight * [T(1) - 200 * x[2]+600 * x[1]^2 -200*x[1]; -200*x[1] T(100)] * v
+  Hv[1] = obj_weight * ((T(1) - 200 * x[2]+600 * x[1]^2) * v[1] - 200 * x[1] * v[2])
+  Hv[2] = obj_weight * (-200*x[1] * v[1] + T(100) * v[2])
   return Hv
 end
