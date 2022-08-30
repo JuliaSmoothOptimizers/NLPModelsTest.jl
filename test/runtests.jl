@@ -55,9 +55,10 @@ map(
   nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp)),
   map(x -> eval(Symbol(x))(), NLPModelsTest.nlp_problems),
 )
+print_nlp_allocations(io, LLS(), test_allocs_nlpmodels(LLS(), exclude = [hess]))
 map(
   nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp)),
-  map(x -> eval(Symbol(x))(), NLPModelsTest.nls_problems),
+  map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
 )
 
 rmprocs()
