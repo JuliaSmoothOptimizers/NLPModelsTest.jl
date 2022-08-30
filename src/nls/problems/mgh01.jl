@@ -179,7 +179,7 @@ function NLPModels.hprod!(
 ) where {T}
   @lencheck 2 x v Hv
   increment!(nls, :neval_hprod)
-  Hv[1] = obj_weight * ((T(1) - 200 * x[2]+600 * x[1]^2 -200*x[1]) * v[1] - 200 * x[1] * v[2])
+  Hv[1] = obj_weight * ((T(1) - 200 * x[2]+600 * x[1]^2) * v[1] - 200 * x[1] * v[2])
   Hv[2] = obj_weight * (-200*x[1] * v[1] + T(100) * v[2])
   return Hv
 end
