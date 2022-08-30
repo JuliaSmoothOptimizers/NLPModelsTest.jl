@@ -121,10 +121,14 @@ function NLPModels.hprod!(
   end
   for i = 1:20
     αi, βi = α(x, i), β(x, i)
-    vi, wi = [1; i / 5; 0; 0], [0; 0; 1; sin(i / 5)]
-    zi = αi * vi + βi * wi
+    viv = v[1] + v[2] * i / 5 # dot([1; i / 5; 0; 0], v)
+    wiv = v[3] + sin(i / 5) * v[4] # dot([0; 0; 1; sin(i / 5)], v)
+    ziv = αi * viv + βi * wiv # dot(αi * [1; i / 5; 0; 0] + βi * [0; 0; 1; sin(i / 5)], v)
     θi = αi^2 + βi^2
-    Hv .+= obj_weight * ((4 * dot(vi, v) * vi + 4 * dot(wi, v) * wi) * θi + 8 * dot(zi, v) * zi)
+    Hv[1] += obj_weight * ((4 * viv) * θi + 8 * ziv * αi)
+    Hv[2] += obj_weight * ((4 * viv * i / 5) * θi + 8 * ziv * αi * i / 5)
+    Hv[3] += obj_weight * ((4 * wiv) * θi + 8 * ziv * βi)
+    Hv[4] += obj_weight * ((4 * wiv * sin(i / 5)) * θi + 8 * ziv * βi * sin(i / 5))
   end
   return Hv
 end
