@@ -16,7 +16,7 @@ function consistent_nlps(
   nlps;
   exclude = [jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
   linear_api = false,
-  reimplemented = [],
+  reimplemented = ["jtprod"],
   test_meta = true,
   test_slack = true,
   test_qn = true,
