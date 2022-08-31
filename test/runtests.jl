@@ -61,4 +61,9 @@ map(
   map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
 )
 
+map(
+  nlp -> print_nlp_allocations(io, nlp, test_allocs_nlsmodels(nlp)),
+  map(x -> eval(Symbol(x))(), NLPModelsTest.nls_problems),
+)
+
 rmprocs()
