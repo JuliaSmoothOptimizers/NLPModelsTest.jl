@@ -4,11 +4,14 @@ export consistent_nlss
 
 """
     consistent_nlss(nlps; exclude=[hess, hprod, hess_coord])
+
 Check that the all `nls`s of the vector `nlss` are consistent, in the sense that
 - Their counters are the same.
 - Their `meta` information is the same.
 - The API functions return the same output given the same input.
+
 In other words, if you create two models of the same problem, they should be consistent.
+
 By default, the functions `hess`, `hprod` and `hess_coord` (and therefore associated functions) are excluded from this check, since some models don't implement them.
 """
 function consistent_nlss(

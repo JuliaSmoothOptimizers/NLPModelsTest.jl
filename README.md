@@ -1,4 +1,4 @@
-# NLPModelsTest.jl
+# NLPModelsTest
 
 This package provides testing facilities for developers of models implementing the [NLPModels](https://github.com/JuliaSmoothOptimizers/NLPModels.jl) API.
 
