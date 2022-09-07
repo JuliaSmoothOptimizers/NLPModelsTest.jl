@@ -40,6 +40,7 @@ The function [`print_nlp_allocations`](@ref) allows a better rending of the resu
 ## Examples
 
 ```@example nlp
+using NLPModelsTest
 list_of_problems = NLPModelsTest.nlp_problems
 nlp = list_of_problems[1]
 ```
@@ -48,12 +49,12 @@ nlp = list_of_problems[1]
 print_nlp_allocations(nlp, test_allocs_nlpmodels(nlp, linear_api = true));
 ```
 
-```@example nls
+```@example nlp
 list_of_problems = NLPModelsTest.nls_problems
 nls = list_of_problems[1]
 ```
 
-```@example nls
+```@example nlp
 print_nlp_allocations(nls, test_allocs_nlsmodels(nls));
 ```
 
