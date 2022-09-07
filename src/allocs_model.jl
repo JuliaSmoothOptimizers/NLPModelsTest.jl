@@ -29,17 +29,7 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
     :hess_lag_op_prod! => NaN,
   )
 
-  if !(obj in exclude)
-    x = get_x0(nlp)
-    obj(nlp, x)
-    nlp_allocations[:obj] = @allocated obj(nlp, x)
-  end
-  if !(grad in exclude)
-    x = get_x0(nlp)
-    g = similar(x)
-    grad!(nlp, x, g)
-    nlp_allocations[:grad!] = @allocated grad!(nlp, x, g)
-  end
+  test_obj_grad!(nlp_allocations, nlp, exclude)
   if !(hess in exclude)
     rows = Vector{Int}(undef, nlp.meta.nnzh)
     cols = Vector{Int}(undef, nlp.meta.nnzh)
@@ -91,7 +81,6 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
   if get_ncon(nlp) > 0 && !(jac in exclude)
     rows = Vector{Int}(undef, nlp.meta.nnzj)
     cols = Vector{Int}(undef, nlp.meta.nnzj)
-    @show "Do we pass here?"
     jac_structure!(nlp, rows, cols)
     nlp_allocations[:jac_structure!] = @allocated jac_structure!(nlp, rows, cols)
     x = get_x0(nlp)
@@ -190,6 +179,45 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
         nlp_allocations[Symbol(:jac_nln_op_transpose_prod!)] = @allocated mul!(Jtv, J', w)
       end
     end
+  end
+  return nlp_allocations
+end
+
+"""
+    test_obj_grad!(nlp_allocations, nlp::AbstractNLPModel, exclude)
+
+Update `nlp_allocations` with allocations of the in-place `obj` and `grad` functions.
+
+For `AbstractNLSModel`, this uses `obj` and `grad` with pre-allocated residual.
+"""
+function test_obj_grad!(nlp_allocations, nlp::AbstractNLPModel, exclude)
+  if !(obj in exclude)
+    x = get_x0(nlp)
+    obj(nlp, x)
+    nlp_allocations[:obj] = @allocated obj(nlp, x)
+  end
+  if !(grad in exclude)
+    x = get_x0(nlp)
+    g = similar(x)
+    grad!(nlp, x, g)
+    nlp_allocations[:grad!] = @allocated grad!(nlp, x, g)
+  end
+  return nlp_allocations
+end
+
+function test_obj_grad!(nlp_allocations, nls::AbstractNLSModel, exclude)
+  if !(obj in exclude)
+    x = get_x0(nls)
+    Fx = Vector{eltype(x)}(undef, get_nequ(nls))
+    obj(nls, x, Fx)
+    nlp_allocations[:obj] = @allocated obj(nls, x, Fx)
+  end
+  if !(grad in exclude)
+    x = get_x0(nls)
+    Fx = Vector{eltype(x)}(undef, get_nequ(nls))
+    g = similar(x)
+    grad!(nls, x, g, Fx)
+    nlp_allocations[:grad!] = @allocated grad!(nls, x, g, Fx)
   end
   return nlp_allocations
 end
