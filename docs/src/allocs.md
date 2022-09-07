@@ -42,7 +42,7 @@ The function [`print_nlp_allocations`](@ref) allows a better rending of the resu
 ```@example nlp
 using NLPModelsTest
 list_of_problems = NLPModelsTest.nlp_problems
-nlp = list_of_problems[1]
+nlp = eval(Symbol(list_of_problems[1]))()
 ```
 
 ```@example nlp
@@ -51,7 +51,7 @@ print_nlp_allocations(nlp, test_allocs_nlpmodels(nlp, linear_api = true));
 
 ```@example nlp
 list_of_problems = NLPModelsTest.nls_problems
-nls = list_of_problems[1]
+nls = eval(Symbol(list_of_problems[1]))()
 ```
 
 ```@example nlp
