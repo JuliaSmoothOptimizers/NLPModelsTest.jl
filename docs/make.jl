@@ -10,7 +10,7 @@ makedocs(
     prettyurls = get(ENV, "CI", nothing) == "true",
   ),
   sitename = "NLPModelsTest.jl",
-  pages = ["Home" => "index.md", "Problems" => "problems.md", "Reference" => "reference.md"],
+  pages = ["Home" => "index.md", "Problems" => "problems.md", "Test allocations of NLPModels" => "allocs.md", "Reference" => "reference.md"],
 )
 
 deploydocs(
