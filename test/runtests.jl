@@ -52,18 +52,13 @@ pmap(nls_tests, NLPModelsTest.nls_problems)
 
 io = IOBuffer();
 map(
-  nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp, linear_api = true)),
+  nlp -> print_nlp_allocations(io, nlp, linear_api = true),
   map(x -> eval(Symbol(x))(), NLPModelsTest.nlp_problems),
 )
-print_nlp_allocations(io, LLS(), test_allocs_nlpmodels(LLS(), linear_api = true, exclude = [hess]))
+print_nlp_allocations(io, LLS(), linear_api = true, exclude = [hess])
 map(
-  nlp -> print_nlp_allocations(io, nlp, test_allocs_nlpmodels(nlp, linear_api = true)),
+  nlp -> print_nlp_allocations(io, nlp, linear_api = true),
   map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
-)
-
-map(
-  nlp -> print_nlp_allocations(io, nlp, test_allocs_nlsmodels(nlp)),
-  map(x -> eval(Symbol(x))(), NLPModelsTest.nls_problems),
 )
 
 rmprocs()

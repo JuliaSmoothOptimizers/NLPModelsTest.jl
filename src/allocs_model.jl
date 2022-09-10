@@ -324,22 +324,51 @@ end
 function NLPModels.histline(s, v, maxv)
   @assert 0 ≤ v ≤ maxv
   λ = maxv == 0 ? 0 : ceil(Int, 20 * v / maxv)
-  return @sprintf("%27s: %s %-6s", s, "█"^λ * "⋅"^(20 - λ), v)
+  return @sprintf("%31s: %s %-6s", s, "█"^λ * "⋅"^(20 - λ), v)
 end
 
 """
-print_nlp_allocations([io::IO = stdout], nlp::AbstractNLPModel, table::Dict)
+    print_nlp_allocations([io::IO = stdout], nlp::AbstractNLPModel, table::Dict; only_nonzeros::Bool = false)
+    print_nlp_allocations([io::IO = stdout], nlp::AbstractNLPModel; kwargs...)
 
-Print in a convenient way the result of `test_allocs_nlpmodels(nlp)`
+Print in a convenient way the result of `test_allocs_nlpmodels(nlp)`.
+
+The keyword arguments may contain:
+- `only_nonzeros::Bool`: shows only non-zeros if true.
+- `linear_api::Bool`: checks the functions specific to linear and nonlinear constraints, see [`test_allocs_nlpmodels`](@ref).
+- `exclude` takes a Array of Function to be excluded from the tests, see [`test_allocs_nlpmodels`](@ref).
 """
-function print_nlp_allocations(nlp::AbstractNLPModel, table::Dict)
-  return print_nlp_allocations(stdout, nlp, table)
+function print_nlp_allocations(nlp::AbstractNLPModel, table::Dict; kwargs...)
+  return print_nlp_allocations(stdout, nlp, table; kwargs...)
 end
 
-function print_nlp_allocations(io, nlp::AbstractNLPModel, table::Dict)
+function print_nlp_allocations(nlp::AbstractNLPModel; kwargs...)
+  return print_nlp_allocations(stdout, nlp; kwargs...)
+end
+
+function print_nlp_allocations(io, nlp::AbstractNLPModel; only_nonzeros::Bool = false, linear_api = false, kwargs...)
+  table = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
+  return print_nlp_allocations(io, nlp, table, only_nonzeros = only_nonzeros)
+end
+
+function print_nlp_allocations(io, nlp::AbstractNLSModel; only_nonzeros::Bool = false, linear_api = false, kwargs...)
+  table_nlp = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
+  table_nls = test_allocs_nlsmodels(nlp; kwargs...)
+  table = merge(table_nlp, table_nls)
+  return print_nlp_allocations(io, nlp, table, only_nonzeros = only_nonzeros)
+end
+
+function print_nlp_allocations(io, nlp::AbstractNLPModel, table::Dict; only_nonzeros::Bool = false)
   for k in keys(table)
     if isnan(table[k])
       pop!(table, k)
+    end
+  end
+  if only_nonzeros
+    for k in keys(table)
+      if table[k] == 0
+        pop!(table, k)
+      end
     end
   end
   println(io, "  Problem name: $(get_name(nlp))")
