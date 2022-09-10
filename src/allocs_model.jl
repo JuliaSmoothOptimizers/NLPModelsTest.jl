@@ -346,12 +346,24 @@ function print_nlp_allocations(nlp::AbstractNLPModel; kwargs...)
   return print_nlp_allocations(stdout, nlp; kwargs...)
 end
 
-function print_nlp_allocations(io, nlp::AbstractNLPModel; only_nonzeros::Bool = false, linear_api = false, kwargs...)
+function print_nlp_allocations(
+  io,
+  nlp::AbstractNLPModel;
+  only_nonzeros::Bool = false,
+  linear_api = false,
+  kwargs...,
+)
   table = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
   return print_nlp_allocations(io, nlp, table, only_nonzeros = only_nonzeros)
 end
 
-function print_nlp_allocations(io, nlp::AbstractNLSModel; only_nonzeros::Bool = false, linear_api = false, kwargs...)
+function print_nlp_allocations(
+  io,
+  nlp::AbstractNLSModel;
+  only_nonzeros::Bool = false,
+  linear_api = false,
+  kwargs...,
+)
   table_nlp = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
   table_nls = test_allocs_nlsmodels(nlp; kwargs...)
   table = merge(table_nlp, table_nls)
