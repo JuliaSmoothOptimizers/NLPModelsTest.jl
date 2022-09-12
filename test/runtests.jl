@@ -63,7 +63,7 @@ map(
 
 map(
   nlp -> test_zero_allocations(nlp, linear_api = true),
-  map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
+  map(x -> eval(Symbol(x))(), NLPModelsTest.nlp_problems),
 )
 test_zero_allocations(LLS(), linear_api = true, exclude = [hess])
 map(
