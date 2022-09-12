@@ -61,4 +61,14 @@ map(
   map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
 )
 
+map(
+  nlp -> test_zero_allocations(nlp, linear_api = true),
+  map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
+)
+test_zero_allocations(LLS(), linear_api = true, exclude = [hess])
+map(
+  nlp -> test_zero_allocations(nlp, linear_api = true),
+  map(x -> eval(Symbol(x))(), setdiff(NLPModelsTest.nls_problems, ["LLS"])),
+)
+
 rmprocs()

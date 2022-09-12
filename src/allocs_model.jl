@@ -1,4 +1,4 @@
-export test_allocs_nlpmodels, test_allocs_nlsmodels, print_nlp_allocations
+export test_allocs_nlpmodels, test_allocs_nlsmodels, test_zero_allocations, print_nlp_allocations
 
 """
     test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclude = [])
@@ -387,4 +387,30 @@ function print_nlp_allocations(io, nlp::AbstractNLPModel, table::Dict; only_nonz
   lines = NLPModels.lines_of_hist(keys(table), values(table))
   println(io, join(lines, "\n") * "\n")
   return table
+end
+
+"""
+    test_zero_allocations(table::Dict, name::String = "Generic")
+    test_zero_allocations(nlp::AbstractNLPModel; kwargs...)
+
+Test wether the result of `test_allocs_nlpmodels(nlp)` and `test_allocs_nlsmodels(nlp)` is 0.
+"""
+function test_zero_allocations(nlp::AbstractNLPModel; kwargs...)
+  table = test_allocs_nlpmodels(nlp; kwargs...)
+  return test_zero_allocations(table, get_name(nlp))
+end
+
+function test_zero_allocations(nlp::AbstractNLSModel; linear_api = linear_api, kwargs...)
+  table_nlp = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
+  table_nls = test_allocs_nlsmodels(nlp; kwargs...)
+  table = merge(table_nlp, table_nls)
+  return test_zero_allocations(table, get_name(nlp))
+end
+
+function test_zero_allocations(table::Dict, name::String = "Generic")
+  @testset "Test 0-allocations of NLPModel API for $name" begin
+    for k in keys(table)
+      isnan(table[k]) || @test table[k] == 0
+    end
+  end
 end
