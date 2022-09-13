@@ -73,10 +73,6 @@ nls = eval(Symbol(list_of_problems[4]))()
 print_nlp_allocations(nls, linear_api = true);
 ```
 
-```@example nlp
-print_nlp_allocations(nls, linear_api = true, only_nonzeros = true);
-```
-
 ### Examples with a testing environment
 
 The function [`test_zero_allocations`](@ref) combines [`test_allocs_nlpmodels`](@ref) and [`test_allocs_nlsmodels`](@ref) in a testing environment.
