@@ -39,23 +39,53 @@ The function [`print_nlp_allocations`](@ref) allows a better rending of the resu
 
 ## Examples
 
+### Examples with an NLPModels
+
 ```@example nlp
 using NLPModelsTest
 list_of_problems = NLPModelsTest.nlp_problems
+```
+
+```@example nlp
 nlp = eval(Symbol(list_of_problems[1]))()
 ```
 
 ```@example nlp
-print_nlp_allocations(nlp, test_allocs_nlpmodels(nlp, linear_api = true));
+print_nlp_allocations(nlp, linear_api = true);
 ```
+
+```@example nlp
+nlp = eval(Symbol(list_of_problems[7]))()
+print_nlp_allocations(nlp, linear_api = true);
+```
+
+### Examples with an NLSModels
 
 ```@example nlp
 list_of_problems = NLPModelsTest.nls_problems
-nls = eval(Symbol(list_of_problems[1]))()
 ```
 
 ```@example nlp
-print_nlp_allocations(nls, test_allocs_nlsmodels(nls));
+nls = eval(Symbol(list_of_problems[4]))()
 ```
 
-Note that all the problems manually implemented in this package are allocations free.
+```@example nlp
+print_nlp_allocations(nls, linear_api = true);
+```
+
+```@example nlp
+print_nlp_allocations(nls, linear_api = true, only_nonzeros = true);
+```
+
+### Examples with a testing environment
+
+The function [`test_zero_allocations`](@ref) combines [`test_allocs_nlpmodels`](@ref) and [`test_allocs_nlsmodels`](@ref) in a testing environment.
+Note that all the problems manually implemented in this package are allocations free using Julia ≥ 1.7.
+
+```@example nlp
+list_of_nlps = map(x -> eval(Symbol(x))(), NLPModelsTest.nlp_problems) # load a list of nlpmodels
+map(
+    nlp -> test_zero_allocations(nlp, linear_api = true),
+    list_of_nlps,
+)
+```
