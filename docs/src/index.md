@@ -79,6 +79,10 @@ hessian_check_from_grad
 hessian_check
 ```
 
+## Allocation tracking
+
+This package has functions to track allocations of an NLPModel. You can check the tutorial Test allocations of NLPModels on our site, [juliasmoothoptimizers.github.io](https://juliasmoothoptimizers.github.io/tutorials/check-allocations-nlpmodels/).
+
 ## TL;DR
 
 ```
