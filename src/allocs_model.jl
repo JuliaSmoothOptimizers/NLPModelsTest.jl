@@ -321,6 +321,7 @@ function test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
   return nlp_allocations
 end
 
+import NLPModels.histline
 function NLPModels.histline(s, v, maxv)
   @assert 0 ≤ v ≤ maxv
   λ = maxv == 0 ? 0 : ceil(Int, 20 * v / maxv)
