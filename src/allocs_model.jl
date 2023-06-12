@@ -321,7 +321,7 @@ function test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
   return nlp_allocations
 end
 
-function NLPModels.histline(s, v, maxv)
+function NLPModels.histline(s::String, v::Integer, maxv::Integer)
   @assert 0 ≤ v ≤ maxv
   λ = maxv == 0 ? 0 : ceil(Int, 20 * v / maxv)
   return @sprintf("%31s: %s %-6s", s, "█"^λ * "⋅"^(20 - λ), v)
