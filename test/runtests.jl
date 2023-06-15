@@ -1,6 +1,6 @@
 using Distributed
 
-np = Sys.CPU_THREADS
+np = 2 # Sys.CPU_THREADS
 addprocs(np - 1)
 
 @everywhere using NLPModels, NLPModelsTest, Test
