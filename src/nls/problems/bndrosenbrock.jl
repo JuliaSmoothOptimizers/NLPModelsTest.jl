@@ -29,7 +29,13 @@ mutable struct BNDROSENBROCK{T, S} <: AbstractNLSModel{T, S}
 end
 
 function BNDROSENBROCK(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(2, x0 = T[-1.2; 1], lvar = T[-1; -2], uvar = T[0.8; 2], name = "BNDROSENBROCK_manual")
+  meta = NLPModelMeta{T, Vector{T}}(
+    2,
+    x0 = T[-1.2; 1],
+    lvar = T[-1; -2],
+    uvar = T[0.8; 2],
+    name = "BNDROSENBROCK_manual",
+  )
   nls_meta = NLSMeta{T, Vector{T}}(2, 2, nnzj = 3, nnzh = 1)
 
   return BNDROSENBROCK(meta, nls_meta, NLSCounters())
@@ -138,7 +144,11 @@ function NLPModels.hprod_residual!(
   return Hiv
 end
 
-function NLPModels.hess_structure!(nls::BNDROSENBROCK, rows::AbstractVector{Int}, cols::AbstractVector{Int})
+function NLPModels.hess_structure!(
+  nls::BNDROSENBROCK,
+  rows::AbstractVector{Int},
+  cols::AbstractVector{Int},
+)
   @lencheck 3 rows cols
   n = nls.meta.nvar
   k = 0
