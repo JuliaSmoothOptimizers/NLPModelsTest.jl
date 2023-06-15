@@ -1,6 +1,6 @@
 name = "NLPModelsTest"
 uuid = "7998695d-6960-4d3a-85c4-e1bceb8cd856"
-version = "0.8.4"
+version = "0.9.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
