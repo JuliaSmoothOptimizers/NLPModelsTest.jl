@@ -307,6 +307,7 @@ function NLPModels.hess_coord!(
 )
   @lencheck 15 x
   @lencheck 15 vals
+  increment!(nls, :neval_hess)
   for i = 1:15
     vals[i] = obj_weight * (6 * x[i]^2 - 2 * i^2)
   end
@@ -364,7 +365,7 @@ function NLPModels.jth_hprod!(
 ) where {T}
   @lencheck 15 x v Hv
   @rangecheck 1 11 j
-  NLPModels.increment!(nls, :neval_jhprod)
+  increment!(nls, :neval_jhprod)
   Hv .= zero(T)
   return Hv
 end
@@ -378,7 +379,7 @@ function NLPModels.jth_hess_coord!(
   @lencheck 15 vals
   @lencheck 15 x
   @rangecheck 1 11 j
-  NLPModels.increment!(nls, :neval_jhess)
+  increment!(nls, :neval_jhess)
   vals .= zero(T)
   return vals
 end
