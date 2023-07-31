@@ -218,6 +218,7 @@ function NLPModels.hess_coord!(
 ) where {T, S}
   @lencheck 2 x
   @lencheck 2 vals
+  increment!(nls, :neval_hess)
   vals[1] = 2obj_weight
   vals[2] = 3obj_weight
   return vals
