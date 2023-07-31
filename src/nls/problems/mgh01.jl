@@ -163,6 +163,7 @@ function NLPModels.hess_coord!(
 ) where {T}
   @lencheck 2 x
   @lencheck 3 vals
+  increment!(nls, :neval_hess)
   vals[1] = T(1) - 200 * x[2] + 600 * x[1]^2
   vals[2] = -200 * x[1]
   vals[3] = T(100)
