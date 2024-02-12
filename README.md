@@ -4,7 +4,7 @@ This package provides testing facilities for developers of models implementing t
 
 ## How to Cite
 
-If you use NLPModelsTest.jl in your work, please cite using the format given in [CITATION.bib](https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/main/CITATION.bib).
+If you use NLPModelsTest.jl in your work, please cite using the format given in [CITATION.cff](https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/blob/main/CITATION.cff).
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4603933.svg)](https://doi.org/10.5281/zenodo.4603933)
 [![GitHub release](https://img.shields.io/github/release/JuliaSmoothOptimizers/NLPModelsTest.jl.svg)](https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/releases/latest)
