@@ -3,7 +3,7 @@ using Distributed
 np = Sys.CPU_THREADS
 addprocs(np - 1)
 
-@everywhere using NLPModels, NLPModelsTest, Test
+@everywhere using CUDA, NLPModels, NLPModelsTest, Test
 
 @everywhere function nlp_tests(p)
   @testset "NLP tests of problem $p" begin
