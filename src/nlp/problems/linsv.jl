@@ -20,13 +20,13 @@ mutable struct LINSV{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function LINSV(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function LINSV(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     2,
     nnzh = 0,
     nnzj = 3,
     ncon = 2,
-    x0 = zeros(T, 2),
+    x0 = fill!(S(undef, 2), 0),
     lcon = T[3; 1],
     ucon = T[Inf; Inf],
     name = "LINSV_manual",
@@ -38,6 +38,8 @@ function LINSV(::Type{T}) where {T}
   return LINSV(meta, Counters())
 end
 LINSV() = LINSV(Float64)
+LINSV(::Type{S}) where {S <: AbstractVector} = LINSV(eltype(S), S)
+LINSV(::Type{T}) where {T} = LINSV(T, Vector{T})
 
 function NLPModels.obj(nlp::LINSV, x::AbstractVector)
   @lencheck 2 x

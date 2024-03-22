@@ -28,25 +28,27 @@ mutable struct LLS{T, S} <: AbstractNLSModel{T, S}
   counters::NLSCounters
 end
 
-function LLS(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function LLS(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     2,
-    x0 = zeros(T, 2),
+    x0 = fill!(S(undef, 2), 0),
     name = "LLS_manual",
     ncon = 1,
-    lcon = T[0.0],
-    ucon = T[Inf],
+    lcon = S([0]),
+    ucon = S([T(Inf)]),
     nnzj = 2,
     nnzh = 2,
     lin = 1:1,
     lin_nnzj = 2,
     nln_nnzj = 0,
   )
-  nls_meta = NLSMeta{T, Vector{T}}(3, 2, nnzj = 5, nnzh = 0)
+  nls_meta = NLSMeta{T, S}(3, 2, nnzj = 5, nnzh = 0)
 
   return LLS(meta, nls_meta, NLSCounters())
 end
 LLS() = LLS(Float64)
+LLS(::Type{S}) where {S <: AbstractVector} = LLS(eltype(S), S)
+LLS(::Type{T}) where {T} = LLS(T, Vector{T})
 
 function NLPModels.residual!(nls::LLS, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x

@@ -19,11 +19,11 @@ mutable struct HS10{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function HS10(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function HS10(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     2,
     ncon = 1,
-    x0 = T[-10; 10],
+    x0 = S(T[-10; 10]),
     lcon = T[0],
     ucon = T[Inf],
     name = "HS10_manual",
@@ -32,6 +32,8 @@ function HS10(::Type{T}) where {T}
   return HS10(meta, Counters())
 end
 HS10() = HS10(Float64)
+HS10(::Type{S}) where {S <: AbstractVector} = HS10(eltype(S), S)
+HS10(::Type{T}) where {T} = HS10(T, Vector{T})
 
 function NLPModels.obj(nlp::HS10, x::AbstractVector)
   @lencheck 2 x
