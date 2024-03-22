@@ -28,19 +28,21 @@ mutable struct BNDROSENBROCK{T, S} <: AbstractNLSModel{T, S}
   counters::NLSCounters
 end
 
-function BNDROSENBROCK(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function BNDROSENBROCK(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     2,
-    x0 = T[-1.2; 1],
-    lvar = T[-1; -2],
-    uvar = T[0.8; 2],
+    x0 = S([-12 // 10; 1]),
+    lvar = S([-1; -2]),
+    uvar = S([8 // 10; 2]),
     name = "BNDROSENBROCK_manual",
   )
-  nls_meta = NLSMeta{T, Vector{T}}(2, 2, nnzj = 3, nnzh = 1)
+  nls_meta = NLSMeta{T, S}(2, 2, nnzj = 3, nnzh = 1)
 
   return BNDROSENBROCK(meta, nls_meta, NLSCounters())
 end
 BNDROSENBROCK() = BNDROSENBROCK(Float64)
+BNDROSENBROCK(::Type{S}) where {S <: AbstractVector} = BNDROSENBROCK(eltype(S), S)
+BNDROSENBROCK(::Type{T}) where {T} = BNDROSENBROCK(T, Vector{T})
 
 function NLPModels.residual!(nls::BNDROSENBROCK, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x Fx

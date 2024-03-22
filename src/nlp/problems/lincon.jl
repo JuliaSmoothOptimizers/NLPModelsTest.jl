@@ -29,13 +29,13 @@ mutable struct LINCON{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function LINCON(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function LINCON(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     15,
     nnzh = 15,
     nnzj = 17,
     ncon = 11,
-    x0 = zeros(T, 15),
+    x0 = fill!(S(undef, 15), 0),
     lcon = T[22; 1; -Inf; -11; -1; 1; -5; -6; -Inf * ones(3)],
     ucon = T[22; Inf; 16; 9; -1; 1; Inf * ones(2); 1; 2; 3],
     name = "LINCON_manual",
@@ -47,6 +47,8 @@ function LINCON(::Type{T}) where {T}
   return LINCON(meta, Counters())
 end
 LINCON() = LINCON(Float64)
+LINCON(::Type{S}) where {S <: AbstractVector} = LINCON(eltype(S), S)
+LINCON(::Type{T}) where {T} = LINCON(T, Vector{T})
 
 function NLPModels.obj(nlp::LINCON, x::AbstractVector)
   @lencheck 15 x

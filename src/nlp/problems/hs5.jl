@@ -20,10 +20,10 @@ mutable struct HS5{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function HS5(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function HS5(::Type{T}, ::Type{S}) where {T, S}
+  meta = NLPModelMeta{T, S}(
     2,
-    x0 = zeros(T, 2),
+    x0 = fill!(S(undef, 2), 0),
     lvar = T[-1.5; -3],
     uvar = T[4; 3],
     name = "HS5_manual",
@@ -32,6 +32,8 @@ function HS5(::Type{T}) where {T}
   return HS5(meta, Counters())
 end
 HS5() = HS5(Float64)
+HS5(::Type{S}) where {S <: AbstractVector} = HS5(eltype(S), S)
+HS5(::Type{T}) where {T} = HS5(T, Vector{T})
 
 function NLPModels.obj(nlp::HS5, x::AbstractVector)
   @lencheck 2 x
