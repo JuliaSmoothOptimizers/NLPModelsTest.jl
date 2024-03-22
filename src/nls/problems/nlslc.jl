@@ -39,7 +39,8 @@ mutable struct NLSLC{T, S} <: AbstractNLSModel{T, S}
   counters::NLSCounters
 end
 
-function NLSLC(::Type{T}, ::Type{S}) where {T, S}
+function NLSLC(::Type{S}) where {S}
+  T = eltype(S)
   meta = NLPModelMeta{T, S}(
     15,
     nnzj = 17,
@@ -58,8 +59,7 @@ function NLSLC(::Type{T}, ::Type{S}) where {T, S}
   return NLSLC(meta, nls_meta, NLSCounters())
 end
 NLSLC() = NLSLC(Float64)
-NLSLC(::Type{S}) where {S <: AbstractVector} = NLSLC(eltype(S), S)
-NLSLC(::Type{T}) where {T} = NLSLC(T, Vector{T})
+NLSLC(::Type{T}) where {T <: Number} = NLSLC(Vector{T})
 
 function NLPModels.residual!(nls::NLSLC, x::AbstractVector, Fx::AbstractVector)
   @lencheck 15 x Fx

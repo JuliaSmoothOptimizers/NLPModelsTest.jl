@@ -25,14 +25,14 @@ mutable struct MGH01Feas{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function MGH01Feas(::Type{T}, ::Type{S}) where {T, S}
-  meta = NLPModelMeta{T, S}(
+function MGH01Feas(::Type{S}) where {S}
+  meta = NLPModelMeta{eltype(S), S}(
     2,
     x0 = S([-12 // 10; 1]),
     name = "MGH01Feas_manual",
     ncon = 2,
-    lcon = T[1; 0],
-    ucon = T[1; 0],
+    lcon = S([1; 0]),
+    ucon = S([1; 0]),
     nnzj = 3,
     nnzh = 1,
     lin = 1:1,
@@ -43,8 +43,7 @@ function MGH01Feas(::Type{T}, ::Type{S}) where {T, S}
   return MGH01Feas(meta, Counters())
 end
 MGH01Feas() = MGH01Feas(Float64)
-MGH01Feas(::Type{S}) where {S <: AbstractVector} = MGH01Feas(eltype(S), S)
-MGH01Feas(::Type{T}) where {T} = MGH01Feas(T, Vector{T})
+MGH01Feas(::Type{T}) where {T <: Number} = MGH01Feas(Vector{T})
 
 function NLPModels.obj(nlp::MGH01Feas, x::AbstractVector)
   @lencheck 2 x

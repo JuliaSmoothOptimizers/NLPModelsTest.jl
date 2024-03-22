@@ -28,7 +28,8 @@ mutable struct BNDROSENBROCK{T, S} <: AbstractNLSModel{T, S}
   counters::NLSCounters
 end
 
-function BNDROSENBROCK(::Type{T}, ::Type{S}) where {T, S}
+function BNDROSENBROCK(::Type{S}) where {S}
+  T = eltype(S)
   meta = NLPModelMeta{T, S}(
     2,
     x0 = S([-12 // 10; 1]),
@@ -41,8 +42,7 @@ function BNDROSENBROCK(::Type{T}, ::Type{S}) where {T, S}
   return BNDROSENBROCK(meta, nls_meta, NLSCounters())
 end
 BNDROSENBROCK() = BNDROSENBROCK(Float64)
-BNDROSENBROCK(::Type{S}) where {S <: AbstractVector} = BNDROSENBROCK(eltype(S), S)
-BNDROSENBROCK(::Type{T}) where {T} = BNDROSENBROCK(T, Vector{T})
+BNDROSENBROCK(::Type{T}) where {T <: Number} = BNDROSENBROCK(Vector{T})
 
 function NLPModels.residual!(nls::BNDROSENBROCK, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x Fx
