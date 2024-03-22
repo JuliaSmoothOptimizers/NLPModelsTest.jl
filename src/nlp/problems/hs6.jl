@@ -19,23 +19,22 @@ mutable struct HS6{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function HS6(::Type{T}, ::Type{S}) where {T, S}
-  meta = NLPModelMeta{T, S}(
+function HS6(::Type{S}) where {S}
+  meta = NLPModelMeta{eltype(S), S}(
     2,
     ncon = 1,
     nnzh = 1,
     nnzj = 2,
-    x0 = S(T[-1.2; 1]),
-    lcon = T[0],
-    ucon = T[0],
+    x0 = S([-12 // 10; 1]),
+    lcon = fill!(S(undef, 1), 0),
+    ucon = fill!(S(undef, 1), 0),
     name = "HS6_manual",
   )
 
   return HS6(meta, Counters())
 end
 HS6() = HS6(Float64)
-HS6(::Type{S}) where {S <: AbstractVector} = HS6(eltype(S), S)
-HS6(::Type{T}) where {T} = HS6(T, Vector{T})
+HS6(::Type{T}) where {T <: Number} = HS6(Vector{T})
 
 function NLPModels.obj(nlp::HS6, x::AbstractVector)
   @lencheck 2 x
