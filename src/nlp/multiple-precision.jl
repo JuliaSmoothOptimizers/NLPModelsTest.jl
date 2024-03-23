@@ -1,4 +1,4 @@
-export multiple_precision_nlp
+export multiple_precision_nlp, multiple_precision_nlp_array
 
 function multiple_precision_nlp(problem::String; kwargs...)
   Base.depwarn(
@@ -7,6 +7,24 @@ function multiple_precision_nlp(problem::String; kwargs...)
   )
   nlp_from_T = eval(Symbol(problem))
   multiple_precision_nlp(nlp_from_T; kwargs...)
+end
+
+"""
+    multiple_precision_nlp_array(nlp_from_T, ::Type{S}; precisions=[Float16, Float32, Float64])
+
+Check that the NLP API functions output type are the same as the input.
+It calls [`multiple_precision_nlp`](@ref) on problem type `T -> nlp_from_T(S(T))`.
+
+The array `precisions` are the tested floating point types.
+Note that `BigFloat` is not tested by default, because it is not supported by `CuArray`.
+"""
+function multiple_precision_nlp_array(
+  nlp_from_T,
+  ::Type{S};
+  precisions::Array = [Float16, Float32, Float64],
+  kwargs...,
+) where {S}
+  return multiple_precision_nlp(T -> nlp_from_T(S{T}), precisions = precisions; kwargs...)
 end
 
 """

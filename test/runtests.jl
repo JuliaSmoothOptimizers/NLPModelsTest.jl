@@ -47,8 +47,31 @@ end
   end
 end
 
+@everywhere function nlp_gpu_tests(p)
+  @testset "NLP tests of problem $p" begin
+    nlp_from_T = eval(Symbol(p))
+    @testset "GPU multiple precision support of problem $p" begin
+      multiple_precision_nlp_array(nlp_from_T, CuArray, linear_api = true, exclude = [])
+    end
+  end
+end
+
+@everywhere function nls_gpu_tests(p)
+  @testset "NLS tests of problem $p" begin
+    nls_from_T = eval(Symbol(p))
+    exclude = p == "LLS" ? [hess_coord, hess] : []
+    @testset "GPU multiple precision support of problem $p" begin
+      CUDA.allowscalar() do # because nonlinear least squares use indexing
+        multiple_precision_nls_array(nls_from_T, CuArray, linear_api = true, exclude = exclude)
+      end
+    end
+  end
+end
+
 pmap(nlp_tests, NLPModelsTest.nlp_problems)
 pmap(nls_tests, NLPModelsTest.nls_problems)
+pmap(nlp_gpu_tests, NLPModelsTest.nlp_problems)
+pmap(nls_gpu_tests, NLPModelsTest.nls_problems)
 
 io = IOBuffer();
 map(
