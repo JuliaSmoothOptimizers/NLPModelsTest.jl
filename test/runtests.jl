@@ -78,7 +78,9 @@ if CUDA.functional()
     @testset "NLP tests of problem $p" begin
       nlp_from_T = eval(Symbol(p))
       @testset "GPU multiple precision support of problem $p" begin
-        multiple_precision_nlp_array(nlp_from_T, CuArray, linear_api = true, exclude = [])
+        CUDA.allowscalar() do
+          multiple_precision_nlp_array(nlp_from_T, CuArray, linear_api = true, exclude = [])
+        end
       end
     end
   end
@@ -87,9 +89,10 @@ if CUDA.functional()
     @testset "NLS tests of problem $p" begin
       nls_from_T = eval(Symbol(p))
       exclude = p == "LLS" ? [hess_coord, hess] : []
-      exclude = union(exclude, [obj, grad, residual]) # TODO: investigate
       @testset "GPU multiple precision support of problem $p" begin
+        CUDA.allowscalar() do
           multiple_precision_nls_array(nls_from_T, CuArray, linear_api = true, exclude = exclude)
+        end
       end
     end
   end

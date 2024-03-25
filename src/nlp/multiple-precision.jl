@@ -45,30 +45,31 @@ function multiple_precision_nlp(
 )
   for T in precisions
     nlp = nlp_from_T(T)
-    x = ones(T, nlp.meta.nvar)
+    S = typeof(nlp.meta.x0)
+    x = fill!(S(undef, nlp.meta.nvar), 1)
     @test obj ∈ exclude || typeof(obj(nlp, x)) == T
-    @test grad ∈ exclude || eltype(grad(nlp, x)) == T
+    @test grad ∈ exclude || typeof(grad(nlp, x)) == S
     @test hess ∈ exclude || eltype(hess(nlp, x)) == T
     @test hess_op ∈ exclude || eltype(hess_op(nlp, x)) == T
     if hess_coord ∉ exclude && hess_op ∉ exclude
       rows, cols = hess_structure(nlp)
       vals = hess_coord(nlp, x)
       @test eltype(vals) == T
-      Hv = zeros(T, nlp.meta.nvar)
+      Hv = fill!(S(undef, nlp.meta.nvar), 1)
       @test eltype(hess_op!(nlp, rows, cols, vals, Hv)) == T
     end
     if nlp.meta.ncon > 0
-      y = ones(T, nlp.meta.ncon)
-      @test cons ∈ exclude || eltype(cons(nlp, x)) == T
+      y = fill!(S(undef, nlp.meta.ncon), 1)
+      @test cons ∈ exclude || typeof(cons(nlp, x)) == S
       @test jac ∈ exclude || eltype(jac(nlp, x)) == T
       @test jac_op ∈ exclude || eltype(jac_op(nlp, x)) == T
       if linear_api && nlp.meta.nnln > 0
-        @test cons ∈ exclude || eltype(cons_nln(nlp, x)) == T
+        @test cons ∈ exclude || typeof(cons_nln(nlp, x)) == S
         @test jac ∈ exclude || eltype(jac_nln(nlp, x)) == T
         @test jac_op ∈ exclude || eltype(jac_nln_op(nlp, x)) == T
       end
       if linear_api && nlp.meta.nlin > 0
-        @test cons ∈ exclude || eltype(cons_lin(nlp, x)) == T
+        @test cons ∈ exclude || typeof(cons_lin(nlp, x)) == S
         @test jac ∈ exclude || eltype(jac_lin(nlp, x)) == T
         @test jac_op ∈ exclude || eltype(jac_lin_op(nlp, x)) == T
       end
@@ -76,23 +77,23 @@ function multiple_precision_nlp(
         rows, cols = jac_structure(nlp)
         vals = jac_coord(nlp, x)
         @test eltype(vals) == T
-        Av = zeros(T, nlp.meta.ncon)
-        Atv = zeros(T, nlp.meta.nvar)
+        Av = fill!(S(undef, nlp.meta.ncon), 0)
+        Atv = fill!(S(undef, nlp.meta.nvar), 0)
         @test eltype(jac_op!(nlp, rows, cols, vals, Av, Atv)) == T
         if linear_api && nlp.meta.nnln > 0
           rows, cols = jac_nln_structure(nlp)
           vals = jac_nln_coord(nlp, x)
-          @test eltype(vals) == T
-          Av = zeros(T, nlp.meta.nnln)
-          Atv = zeros(T, nlp.meta.nvar)
+          @test typeof(vals) == S
+          Av = fill!(S(undef, nlp.meta.nnln), 0)
+          Atv = fill!(S(undef, nlp.meta.nvar), 0)
           @test eltype(jac_nln_op!(nlp, rows, cols, vals, Av, Atv)) == T
         end
         if linear_api && nlp.meta.nlin > 0
           rows, cols = jac_lin_structure(nlp)
           vals = jac_lin_coord(nlp, x)
-          @test eltype(vals) == T
-          Av = zeros(T, nlp.meta.nlin)
-          Atv = zeros(T, nlp.meta.nvar)
+          @test typeof(vals) == S
+          Av = fill!(S(undef, nlp.meta.nlin), 0)
+          Atv = fill!(S(undef, nlp.meta.nvar), 0)
           @test eltype(jac_lin_op!(nlp, rows, cols, vals, Av, Atv)) == T
         end
       end
@@ -102,8 +103,8 @@ function multiple_precision_nlp(
       if hess_coord ∉ exclude && hess_op ∉ exclude
         rows, cols = hess_structure(nlp)
         vals = hess_coord(nlp, x, y)
-        @test eltype(vals) == T
-        Hv = zeros(T, nlp.meta.nvar)
+        @test typeof(vals) == S
+        Hv = fill!(S(undef, nlp.meta.nvar), 0)
         @test eltype(hess_op!(nlp, rows, cols, vals, Hv)) == T
       end
       @test jth_hess ∈ exclude || eltype(jth_hess(nlp, x, 1)) == T
