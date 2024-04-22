@@ -54,7 +54,7 @@ function multiple_precision_nls(
       rows, cols = jac_structure_residual(nls)
       vals = jac_coord_residual(nls, x)
       @test typeof(vals) == S
-      Av = fill!(S(undef, nls.meta.ncon), 0)
+      Av = fill!(S(undef, nls.nls_meta.nequ), 0)
       Atv = fill!(S(undef, nls.meta.nvar), 0)
       @test eltype(jac_op_residual!(nls, rows, cols, vals, Av, Atv)) == T
     end
