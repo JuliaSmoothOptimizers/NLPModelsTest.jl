@@ -30,23 +30,25 @@ mutable struct NLSHS20{T, S} <: AbstractNLSModel{T, S}
   counters::NLSCounters
 end
 
-function NLSHS20(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function NLSHS20(::Type{S}) where {S}
+  T = eltype(S)
+  meta = NLPModelMeta{T, S}(
     2,
-    x0 = T[-2.0; 1.0],
+    x0 = S([-2; 1]),
     name = "NLSHS20_manual",
-    lvar = T[-0.5; -Inf],
-    uvar = T[0.5; Inf],
+    lvar = S([-1 // 2; -T(Inf)]),
+    uvar = S([1 // 2; T(Inf)]),
     ncon = 3,
-    lcon = zeros(T, 3),
-    ucon = fill(T(Inf), 3),
+    lcon = fill!(S(undef, 3), 0),
+    ucon = fill!(S(undef, 3), T(Inf)),
     nnzj = 6,
   )
-  nls_meta = NLSMeta{T, Vector{T}}(2, 2, nnzj = 3, nnzh = 1)
+  nls_meta = NLSMeta{T, S}(2, 2, nnzj = 3, nnzh = 1)
 
   return NLSHS20(meta, nls_meta, NLSCounters())
 end
 NLSHS20() = NLSHS20(Float64)
+NLSHS20(::Type{T}) where {T <: Number} = NLSHS20(Vector{T})
 
 function NLPModels.residual!(nls::NLSHS20, x::AbstractVector, Fx::AbstractVector)
   @lencheck 2 x Fx

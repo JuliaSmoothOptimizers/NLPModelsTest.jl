@@ -20,14 +20,15 @@ mutable struct HS14{T, S} <: AbstractNLPModel{T, S}
   counters::Counters
 end
 
-function HS14(::Type{T}) where {T}
-  meta = NLPModelMeta{T, Vector{T}}(
+function HS14(::Type{S}) where {S}
+  T = eltype(S)
+  meta = NLPModelMeta{T, S}(
     2,
     nnzh = 2,
     ncon = 2,
-    x0 = T[2; 2],
-    lcon = T[-1; 0],
-    ucon = T[-1; Inf],
+    x0 = S([2; 2]),
+    lcon = S([-1; 0]),
+    ucon = S([-1; T(Inf)]),
     name = "HS14_manual",
     lin = 1:1,
     lin_nnzj = 2,
@@ -37,6 +38,7 @@ function HS14(::Type{T}) where {T}
   return HS14(meta, Counters())
 end
 HS14() = HS14(Float64)
+HS14(::Type{T}) where {T <: Number} = HS14(Vector{T})
 
 function NLPModels.obj(nlp::HS14, x::AbstractVector)
   @lencheck 2 x

@@ -1,4 +1,4 @@
-export multiple_precision_nls
+export multiple_precision_nls, multiple_precision_nls_array
 
 function multiple_precision_nls(problem::String; kwargs...)
   Base.depwarn(
@@ -7,6 +7,24 @@ function multiple_precision_nls(problem::String; kwargs...)
   )
   nls_from_T = eval(Symbol(problem))
   multiple_precision_nls(nls_from_T; kwargs...)
+end
+
+"""
+    multiple_precision_nls_array(nlp_from_T, ::Type{S}; precisions=[Float16, Float32, Float64])
+
+Check that the NLS API functions output type are the same as the input.
+It calls [`multiple_precision_nls`](@ref) on problem type `T -> nlp_from_T(S(T))`.
+
+The array `precisions` are the tested floating point types.
+Note that `BigFloat` is not tested by default, because it is not supported by `CuArray`.
+"""
+function multiple_precision_nls_array(
+  nlp_from_T,
+  ::Type{S};
+  precisions::Array = [Float16, Float32, Float64],
+  kwargs...,
+) where {S}
+  return multiple_precision_nls(T -> nlp_from_T(S{T}), precisions = precisions; kwargs...)
 end
 
 """
@@ -27,16 +45,17 @@ function multiple_precision_nls(
 )
   for T in precisions
     nls = nls_from_T(T)
-    x = ones(T, nls.meta.nvar)
-    @test residual ∈ exclude || eltype(residual(nls, x)) == T
+    S = typeof(nls.meta.x0)
+    x = fill!(S(undef, nls.meta.nvar), 1)
+    @test residual ∈ exclude || typeof(residual(nls, x)) == S
     @test jac_residual ∈ exclude || eltype(jac_residual(nls, x)) == T
     @test jac_op_residual ∈ exclude || eltype(jac_op_residual(nls, x)) == T
     if jac_coord_residual ∉ exclude && jac_op_residual ∉ exclude
       rows, cols = jac_structure_residual(nls)
       vals = jac_coord_residual(nls, x)
-      @test eltype(vals) == T
-      Av = zeros(T, nls.nls_meta.nequ)
-      Atv = zeros(T, nls.meta.nvar)
+      @test typeof(vals) == S
+      Av = fill!(S(undef, nls.nls_meta.nequ), 0)
+      Atv = fill!(S(undef, nls.meta.nvar), 0)
       @test eltype(jac_op_residual!(nls, rows, cols, vals, Av, Atv)) == T
     end
     @test hess_residual ∈ exclude || eltype(hess_residual(nls, x, ones(T, nls.nls_meta.nequ))) == T
@@ -46,42 +65,42 @@ function multiple_precision_nls(
       end
     end
     @test obj ∈ exclude || typeof(obj(nls, x)) == T
-    @test grad ∈ exclude || eltype(grad(nls, x)) == T
+    @test grad ∈ exclude || typeof(grad(nls, x)) == S
     if nls.meta.ncon > 0
-      @test cons ∈ exclude || eltype(cons(nls, x)) == T
+      @test cons ∈ exclude || typeof(cons(nls, x)) == S
       @test jac ∈ exclude || eltype(jac(nls, x)) == T
       @test jac_op ∈ exclude || eltype(jac_op(nls, x)) == T
       if linear_api && nls.meta.nnln > 0
-        @test cons ∈ exclude || eltype(cons_nln(nls, x)) == T
+        @test cons ∈ exclude || typeof(cons_nln(nls, x)) == S
         @test jac ∈ exclude || eltype(jac_nln(nls, x)) == T
         @test jac_op ∈ exclude || eltype(jac_nln_op(nls, x)) == T
       end
       if linear_api && nls.meta.nlin > 0
-        @test cons ∈ exclude || eltype(cons_lin(nls, x)) == T
+        @test cons ∈ exclude || typeof(cons_lin(nls, x)) == S
         @test jac ∈ exclude || eltype(jac_lin(nls, x)) == T
         @test jac_op ∈ exclude || eltype(jac_lin_op(nls, x)) == T
       end
       if jac_coord ∉ exclude && jac_op ∉ exclude
         rows, cols = jac_structure(nls)
         vals = jac_coord(nls, x)
-        @test eltype(vals) == T
-        Av = zeros(T, nls.meta.ncon)
-        Atv = zeros(T, nls.meta.nvar)
+        @test typeof(vals) == S
+        Av = fill!(S(undef, nls.meta.ncon), 0)
+        Atv = fill!(S(undef, nls.meta.nvar), 0)
         @test eltype(jac_op!(nls, rows, cols, vals, Av, Atv)) == T
         if linear_api && nls.meta.nnln > 0
           rows, cols = jac_nln_structure(nls)
           vals = jac_nln_coord(nls, x)
-          @test eltype(vals) == T
-          Av = zeros(T, nls.meta.nnln)
-          Atv = zeros(T, nls.meta.nvar)
+          @test typeof(vals) == S
+          Av = fill!(S(undef, nls.meta.nnln), 0)
+          Atv = fill!(S(undef, nls.meta.nvar), 0)
           @test eltype(jac_nln_op!(nls, rows, cols, vals, Av, Atv)) == T
         end
         if linear_api && nls.meta.nlin > 0
           rows, cols = jac_lin_structure(nls)
           vals = jac_lin_coord(nls, x)
-          @test eltype(vals) == T
-          Av = zeros(T, nls.meta.nlin)
-          Atv = zeros(T, nls.meta.nvar)
+          @test typeof(vals) == S
+          Av = fill!(S(undef, nls.meta.nlin), 0)
+          Atv = fill!(S(undef, nls.meta.nvar), 0)
           @test eltype(jac_lin_op!(nls, rows, cols, vals, Av, Atv)) == T
         end
       end
