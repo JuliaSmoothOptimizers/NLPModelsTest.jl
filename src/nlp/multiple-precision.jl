@@ -54,7 +54,7 @@ function multiple_precision_nlp(
     if hess_coord ∉ exclude && hess_op ∉ exclude
       rows, cols = hess_structure(nlp)
       vals = hess_coord(nlp, x)
-      @test eltype(vals) == T
+      @test typeof(vals) == S
       Hv = fill!(S(undef, nlp.meta.nvar), 1)
       @test eltype(hess_op!(nlp, rows, cols, vals, Hv)) == T
     end
@@ -76,7 +76,7 @@ function multiple_precision_nlp(
       if jac_coord ∉ exclude && jac_op ∉ exclude
         rows, cols = jac_structure(nlp)
         vals = jac_coord(nlp, x)
-        @test eltype(vals) == T
+        @test typeof(vals) == S
         Av = fill!(S(undef, nlp.meta.ncon), 0)
         Atv = fill!(S(undef, nlp.meta.nvar), 0)
         @test eltype(jac_op!(nlp, rows, cols, vals, Av, Atv)) == T
