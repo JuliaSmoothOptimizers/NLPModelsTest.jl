@@ -84,7 +84,7 @@ if CUDA.functional()
       end
     end
   end
-  
+
   @everywhere function nls_gpu_tests(p)
     @testset "NLS tests of problem $p" begin
       nls_from_T = eval(Symbol(p))
@@ -96,7 +96,7 @@ if CUDA.functional()
       end
     end
   end
-  
+
   pmap(nlp_gpu_tests, NLPModelsTest.nlp_problems)
   pmap(nls_gpu_tests, NLPModelsTest.nls_problems)
 end
