@@ -47,10 +47,12 @@ function multiple_precision_nlp(
     nlp = nlp_from_T(T)
     S = typeof(nlp.meta.x0)
     x = fill!(S(undef, nlp.meta.nvar), 1)
+    v = fill!(S(undef, nlp.meta.nvar), 2)
     @test obj ∈ exclude || typeof(obj(nlp, x)) == T
     @test grad ∈ exclude || typeof(grad(nlp, x)) == S
     @test hess ∈ exclude || eltype(hess(nlp, x)) == T
     @test hess_op ∈ exclude || eltype(hess_op(nlp, x)) == T
+    @test hprod ∈ exclude || typeof(hprod(nlp, x, v)) == S
     if hess_coord ∉ exclude && hess_op ∉ exclude
       rows, cols = hess_structure(nlp)
       vals = hess_coord(nlp, x)
@@ -63,6 +65,8 @@ function multiple_precision_nlp(
       @test cons ∈ exclude || typeof(cons(nlp, x)) == S
       @test jac ∈ exclude || eltype(jac(nlp, x)) == T
       @test jac_op ∈ exclude || eltype(jac_op(nlp, x)) == T
+      @test jprod ∈ exclude || typeof(jprod(nlp, x, v)) == S
+      @test jtprod ∈ exclude || typeof(jtprod(nlp, x, y)) == S
       if linear_api && nlp.meta.nnln > 0
         @test cons ∈ exclude || typeof(cons_nln(nlp, x)) == S
         @test jac ∈ exclude || eltype(jac_nln(nlp, x)) == T
@@ -100,6 +104,7 @@ function multiple_precision_nlp(
       @test hess ∈ exclude || eltype(hess(nlp, x, y)) == T
       @test hess ∈ exclude || eltype(hess(nlp, x, y, obj_weight = one(T))) == T
       @test hess_op ∈ exclude || eltype(hess_op(nlp, x, y)) == T
+      @test hprod ∈ exclude || typeof(hprod(nlp, x, y, v)) == S
       if hess_coord ∉ exclude && hess_op ∉ exclude
         rows, cols = hess_structure(nlp)
         vals = hess_coord(nlp, x, y)
