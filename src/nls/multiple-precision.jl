@@ -47,9 +47,14 @@ function multiple_precision_nls(
     nls = nls_from_T(T)
     S = typeof(nls.meta.x0)
     x = fill!(S(undef, nls.meta.nvar), 1)
+    v = fill!(S(undef, nls.meta.nvar), 2)
+    y = fill!(S(undef, nls.meta.ncon), 2)
+    w = fill!(S(undef, nls.nls_meta.nequ), 2)
     @test residual ∈ exclude || typeof(residual(nls, x)) == S
     @test jac_residual ∈ exclude || eltype(jac_residual(nls, x)) == T
     @test jac_op_residual ∈ exclude || eltype(jac_op_residual(nls, x)) == T
+    @test jprod_residual ∈ exclude || typeof(jprod_residual(nls, x, v)) == S
+    @test jtprod_residual ∈ exclude || typeof(jtprod_residual(nls, x, w)) == S
     if jac_coord_residual ∉ exclude && jac_op_residual ∉ exclude
       rows, cols = jac_structure_residual(nls)
       vals = jac_coord_residual(nls, x)
@@ -62,6 +67,11 @@ function multiple_precision_nls(
     if hess_op_residual ∉ exclude
       for i = 1:(nls.nls_meta.nequ)
         @test eltype(hess_op_residual(nls, x, i)) == T
+      end
+    end
+    if hprod_residual ∉ exclude
+      for i = 1:(nls.nls_meta.nequ)
+        @test typeof(hprod_residual(nls, x, i, v)) == S
       end
     end
     @test obj ∈ exclude || typeof(obj(nls, x)) == T
@@ -87,6 +97,8 @@ function multiple_precision_nls(
         Av = fill!(S(undef, nls.meta.ncon), 0)
         Atv = fill!(S(undef, nls.meta.nvar), 0)
         @test eltype(jac_op!(nls, rows, cols, vals, Av, Atv)) == T
+        @test jprod ∈ exclude || typeof(jprod(nls, x, v)) == S
+        @test jtprod ∈ exclude || typeof(jtprod(nls, x, y)) == S
         if linear_api && nls.meta.nnln > 0
           rows, cols = jac_nln_structure(nls)
           vals = jac_nln_coord(nls, x)
