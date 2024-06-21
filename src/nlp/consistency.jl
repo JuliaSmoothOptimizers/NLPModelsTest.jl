@@ -276,6 +276,7 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
         @test isapprox(cs[i], tmp_m, atol = rtol * max(cmin, 1.0))
         @test isapprox(tmpc, tmp_m, atol = rtol * max(cmin, 1.0))
         ci, li, ui = copy(cs[i]), cls[i], cus[i]
+        @show ci, li, ui
         for k = 1:m
           if li[k] > -Inf
             ci[k] -= li[k]
@@ -283,8 +284,10 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
             ci[k] -= ui[k]
           end
         end
+        @show ci
         for j = (i + 1):N
           cj, lj, uj = copy(cs[j]), cls[j], cus[j]
+          @show cj, lj, uj
           for k = 1:m
             if lj[k] > -Inf
               cj[k] -= lj[k]
@@ -292,6 +295,7 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
               cj[k] -= uj[k]
             end
           end
+          @show cj
           @test isapprox(norm(ci), norm(cj), atol = rtol * max(cmin, 1.0))
         end
 
