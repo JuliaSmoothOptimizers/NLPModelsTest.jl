@@ -46,10 +46,10 @@ function multiple_precision_nls(
   for T in precisions
     nls = nls_from_T(T)
     S = typeof(nls.meta.x0)
-    x = fill!(S(undef, nls.meta.nvar), 1)
-    v = fill!(S(undef, nls.meta.nvar), 2)
-    y = fill!(S(undef, nls.meta.ncon), 2)
-    w = fill!(S(undef, nls.nls_meta.nequ), 2)
+    x = fill!(S(undef, nls.meta.nvar), T(1))
+    v = fill!(S(undef, nls.meta.nvar), T(2))
+    y = fill!(S(undef, nls.meta.ncon), T(2))
+    w = fill!(S(undef, nls.nls_meta.nequ), T(2))
     @test residual ∈ exclude || typeof(residual(nls, x)) == S
     @test jac_residual ∈ exclude || eltype(jac_residual(nls, x)) == T
     @test jac_op_residual ∈ exclude || eltype(jac_op_residual(nls, x)) == T
@@ -59,8 +59,8 @@ function multiple_precision_nls(
       rows, cols = jac_structure_residual(nls)
       vals = jac_coord_residual(nls, x)
       @test typeof(vals) == S
-      Av = fill!(S(undef, nls.nls_meta.nequ), 0)
-      Atv = fill!(S(undef, nls.meta.nvar), 0)
+      Av = fill!(S(undef, nls.nls_meta.nequ), T(0))
+      Atv = fill!(S(undef, nls.meta.nvar), T(0))
       @test eltype(jac_op_residual!(nls, rows, cols, vals, Av, Atv)) == T
     end
     @test hess_residual ∈ exclude || eltype(hess_residual(nls, x, ones(T, nls.nls_meta.nequ))) == T
@@ -94,8 +94,8 @@ function multiple_precision_nls(
         rows, cols = jac_structure(nls)
         vals = jac_coord(nls, x)
         @test typeof(vals) == S
-        Av = fill!(S(undef, nls.meta.ncon), 0)
-        Atv = fill!(S(undef, nls.meta.nvar), 0)
+        Av = fill!(S(undef, nls.meta.ncon), T(0))
+        Atv = fill!(S(undef, nls.meta.nvar), T(0))
         @test eltype(jac_op!(nls, rows, cols, vals, Av, Atv)) == T
         @test jprod ∈ exclude || typeof(jprod(nls, x, v)) == S
         @test jtprod ∈ exclude || typeof(jtprod(nls, x, y)) == S
@@ -103,16 +103,16 @@ function multiple_precision_nls(
           rows, cols = jac_nln_structure(nls)
           vals = jac_nln_coord(nls, x)
           @test typeof(vals) == S
-          Av = fill!(S(undef, nls.meta.nnln), 0)
-          Atv = fill!(S(undef, nls.meta.nvar), 0)
+          Av = fill!(S(undef, nls.meta.nnln), T(0))
+          Atv = fill!(S(undef, nls.meta.nvar), T(0))
           @test eltype(jac_nln_op!(nls, rows, cols, vals, Av, Atv)) == T
         end
         if linear_api && nls.meta.nlin > 0
           rows, cols = jac_lin_structure(nls)
           vals = jac_lin_coord(nls, x)
           @test typeof(vals) == S
-          Av = fill!(S(undef, nls.meta.nlin), 0)
-          Atv = fill!(S(undef, nls.meta.nvar), 0)
+          Av = fill!(S(undef, nls.meta.nlin), T(0))
+          Atv = fill!(S(undef, nls.meta.nvar), T(0))
           @test eltype(jac_lin_op!(nls, rows, cols, vals, Av, Atv)) == T
         end
       end
