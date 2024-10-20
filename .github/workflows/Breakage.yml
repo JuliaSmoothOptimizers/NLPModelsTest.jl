@@ -34,7 +34,7 @@ jobs:
           arch: x64
       - id: getmatrix
         run: |
-          julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url = "https://github.com/JuliaRegistries/General.git"))'
+          julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url = \"https://github.com/JuliaRegistries/General.git\"))'
           julia --project=.breakage -e 'using Pkg; Pkg.update(); Pkg.instantiate()'
           pkgs=$(julia --project=.breakage .breakage/get_jso_users.jl ${{ env.pkg }})
           vs='["latest", "stable"]'
