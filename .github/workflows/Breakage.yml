@@ -39,11 +39,12 @@ jobs:
           pkgs=$(julia --project=.breakage .breakage/get_jso_users.jl ${{ env.pkg }})
           vs='["latest", "stable"]'
           # Check if pkgs is empty, and set it to a JSON array if necessary
-          if [[ -z "$pkgs" ]]; then
+          if [[ -z "$pkgs" || "$pkgs" == "String[]" ]]; then
             echo "No packages found; exiting successfully."
             exit 0
           fi
-          matrix=$(jq -cn --argjson deps "$pkgs" --argjson vers "$vs" '{pkg: $deps, pkgversion: $vers}')
+          vs='["latest", "stable"]'
+          matrix=$(jq -cn --argjson deps "$pkgs" --argjson vers "$vs" '{pkg: $deps, pkgversion: $vers}')  # don't escape quotes like many posts suggest
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   break:
