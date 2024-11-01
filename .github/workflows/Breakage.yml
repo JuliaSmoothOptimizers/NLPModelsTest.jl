@@ -37,11 +37,8 @@ jobs:
           julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url = "https://github.com/JuliaRegistries/General.git"))'
           julia --project=.breakage -e 'using Pkg; Pkg.update(); Pkg.instantiate()'
           pkgs=$(julia --project=.breakage .breakage/get_jso_users.jl ${{ env.pkg }})
-          if [[ -z "$pkgs" ]]; then
-            pkgs="[]"
-          fi
           vs='["latest", "stable"]'
-          matrix=$(jq -cn --argjson deps "$pkgs" --argjson vers "$vs" '{pkg: $deps, pkgversion: $vers}')  # don't escape quotes like many posts suggest
+          matrix=$(jq -cn --argjson deps "${pkgs:-[]}" --argjson vers "$vs" '{pkg: $deps, pkgversion: $vers}') # don't escape quotes like many posts suggest
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   break:
