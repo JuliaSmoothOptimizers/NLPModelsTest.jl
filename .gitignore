@@ -1,4 +1,7 @@
+*.jl.*.cov
 *.jl.cov
 *.jl.mem
-docs/build
-docs/site
+Manifest.toml
+docs/build/
+*.rej
+node_modules
