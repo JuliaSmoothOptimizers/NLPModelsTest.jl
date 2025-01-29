@@ -5,3 +5,6 @@ Manifest.toml
 docs/build/
 *.rej
 node_modules
+docs/site
+docs/Manifest.toml
+
