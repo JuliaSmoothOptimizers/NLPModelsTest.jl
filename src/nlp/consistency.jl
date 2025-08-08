@@ -96,7 +96,7 @@ function consistent_counters(nlps; linear_api = false, reimplemented = String[])
       end
     end
   end
-  if linear_api && test_counters
+  if linear_api
     V = [sum_counters(nlp) for nlp in nlps]
     @test (reimplemented != []) | all(V .== V[1])
     for field in setdiff(collect(fieldnames(Counters)), check_fields)
