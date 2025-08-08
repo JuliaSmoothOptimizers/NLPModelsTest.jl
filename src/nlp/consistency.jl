@@ -21,16 +21,17 @@ function consistent_nlps(
   test_slack = true,
   test_qn = true,
   test_derivative = true,
+  test_counters = true,
   rtol = 1.0e-8,
 )
-  consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+  test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
   test_meta && consistent_meta(nlps, rtol = rtol)
   consistent_functions(nlps, linear_api = linear_api, rtol = rtol, exclude = exclude)
-  consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+  test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
   for nlp in nlps
     reset!(nlp)
   end
-  consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+  test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
   if test_derivative
     for nlp in nlps
       @test length(gradient_check(nlp)) == 0
@@ -51,7 +52,7 @@ function consistent_nlps(
       linear_api = linear_api,
       exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
     )
-    consistent_counters([nlps; qnmodels], linear_api = linear_api, reimplemented = reimplemented)
+    test_counters && consistent_counters([nlps; qnmodels], linear_api = linear_api, reimplemented = reimplemented)
   end
 
   if test_slack && has_inequalities(nlps[1])
@@ -62,7 +63,7 @@ function consistent_nlps(
       linear_api = linear_api,
       exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
     )
-    consistent_counters(slack_nlps, linear_api = linear_api, reimplemented = reimplemented)
+    test_counters && consistent_counters(slack_nlps, linear_api = linear_api, reimplemented = reimplemented)
   end
 end
 
