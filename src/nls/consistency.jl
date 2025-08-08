@@ -20,12 +20,13 @@ function consistent_nlss(
   linear_api = false,
   test_slack = true,
   test_ff = true,
+  test_counters = true,
 )
   consistent_nls_counters(nlss)
-  consistent_counters(nlss, linear_api = linear_api)
+  test_counters && consistent_counters(nlss, linear_api = linear_api)
   consistent_nls_functions(nlss, exclude = exclude)
   consistent_nls_counters(nlss)
-  consistent_counters(nlss, linear_api = linear_api)
+  test_counters && consistent_counters(nlss, linear_api = linear_api)
   for nls in nlss
     reset!(nls)
   end
@@ -35,8 +36,8 @@ function consistent_nlss(
     reset!.(nlss)
     slack_nlss = SlackNLSModel.(nlss)
     consistent_nls_functions(slack_nlss, exclude = exclude)
-    consistent_nls_counters(slack_nlss)
-    consistent_counters(slack_nlss, linear_api = linear_api)
+    test_counters && consistent_nls_counters(slack_nlss)
+    test_counters && consistent_counters(slack_nlss, linear_api = linear_api)
     consistent_functions(
       slack_nlss,
       linear_api = linear_api,
@@ -48,8 +49,8 @@ function consistent_nlss(
     reset!.(nlss)
     ff_nlss = FeasibilityFormNLS.(nlss)
     consistent_nls_functions(ff_nlss, exclude = exclude)
-    consistent_nls_counters(ff_nlss)
-    consistent_counters(ff_nlss, linear_api = false)
+    test_counters && consistent_nls_counters(ff_nlss)
+    test_counters && consistent_counters(ff_nlss, linear_api = false)
     consistent_functions(
       ff_nlss,
       linear_api = false,

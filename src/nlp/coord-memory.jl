@@ -1,7 +1,7 @@
 export coord_memory_nlp
 
 """
-    coord_memory_nlp(nlp; exclude = [])
+    coord_memory_nlp(nlp; linear_api = false, exclude = [])
 
 Check that the allocated memory for in place coord methods is
 sufficiently smaller than their allocating counter parts.
