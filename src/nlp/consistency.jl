@@ -52,7 +52,8 @@ function consistent_nlps(
       linear_api = linear_api,
       exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
     )
-    test_counters && consistent_counters([nlps; qnmodels], linear_api = linear_api, reimplemented = reimplemented)
+    test_counters &&
+      consistent_counters([nlps; qnmodels], linear_api = linear_api, reimplemented = reimplemented)
   end
 
   if test_slack && has_inequalities(nlps[1])
@@ -63,7 +64,8 @@ function consistent_nlps(
       linear_api = linear_api,
       exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
     )
-    test_counters && consistent_counters(slack_nlps, linear_api = linear_api, reimplemented = reimplemented)
+    test_counters &&
+      consistent_counters(slack_nlps, linear_api = linear_api, reimplemented = reimplemented)
   end
 end
 
