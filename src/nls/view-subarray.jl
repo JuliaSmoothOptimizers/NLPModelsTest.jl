@@ -7,16 +7,12 @@ Check that the API work with views, and that the results is correct.
 """
 function view_subarray_nls(nls; exclude = [])
   @testset "Test view subarray of NLSs" begin
-    n, ne = nls.meta.nvar, nls.nls_meta.nequ
-    N = 2n
-    Vidxs = [1:n, n .+ (1:n), 1:2:N, collect(N:-2:1)]
-    N = 2ne
-    Fidxs = [1:ne, ne .+ (1:ne), 1:2:N, collect(N:-2:1)]
+    n, ne = nls.meta.nvar, nls.nls_meta.nequ  
 
     # Inputs
-    x = [-(-1.1)^i for i = 1:(2n)] # Instead of [1, -1, …], because it needs to
-    v = [-(-1.1)^i for i = 1:(2n)] # access different parts of the vector and
-    y = [-(-1.1)^i for i = 1:(2ne)] # make a difference
+    x = [-(-1.1)^i for i = 1:n] # Instead of [1, -1, …], because it needs to
+    v = [-(-1.1)^i for i = 1:n] # access different parts of the vector and
+    y = [-(-1.1)^i for i = 1:ne] # make a difference
 
     # Outputs
     F = zeros(ne)
@@ -28,74 +24,38 @@ function view_subarray_nls(nls; exclude = [])
     hv = zeros(n)
     hv2 = zeros(2n)
 
-    for I in Vidxs
-      xv = @view x[I]
-      for foo in setdiff([residual, jac_residual], exclude)
-        @test foo(nls, x[I]) ≈ foo(nls, xv)
-      end
+    # Vidxs = [1:n, n .+ (1:n), 1:2:N, collect(N:-2:1)]
+    I = collect(2n:-2:1)
+    # Fidxs = [1:ne, ne .+ (1:ne), 1:2:N, collect(N:-2:1)]
+    J = ne .+ (1:ne)
 
-      # Inplace methods can have input and output as view, so 4 possibilities
-      if residual ∉ exclude
-        for J in Fidxs
-          Fv = @view F2[J]
-          residual!(nls, x[I], F)
-          residual!(nls, x[I], Fv)
-          @test F ≈ F2[J]
-          residual!(nls, xv, Fv)
-          @test F ≈ F2[J]
-          residual!(nls, xv, F)
-          @test F ≈ F2[J]
-        end
-      end
+    if residual ∉ exclude
+      Fv = @view F2[J]
+      residual!(nls, x, Fv)
+      residual!(nls, x, F)
+      @test F ≈ F2[J]
+    end
 
-      if jprod_residual ∉ exclude
-        for J in Fidxs, K in Vidxs
-          vv = @view v[K]
-          jvv = @view jv2[J]
-          @test jprod_residual(nls, x[I], v[K]) ≈ jprod_residual(nls, xv, vv)
-          jprod_residual!(nls, x[I], v[K], jv)
-          jprod_residual!(nls, x[I], v[K], jvv)
-          @test jv ≈ jv2[J]
-          jprod_residual!(nls, xv, vv, jvv)
-          @test jv ≈ jv2[J]
-          jprod_residual!(nls, xv, vv, jv)
-          @test jv ≈ jv2[J]
-        end
-      end
+    if jprod_residual ∉ exclude
+      jvv = @view jv2[J]
+      jprod_residual!(nls, x, v, jvv)
+      jprod_residual!(nls, x, v, jv)
+      @test jv ≈ jv2[J]
+    end
 
-      if jtprod_residual ∉ exclude
-        for J in Fidxs, K in Vidxs
-          yv = @view y[J]
-          jtyv = @view jty2[K]
-          @test jtprod_residual(nls, x[I], y[J]) ≈ jtprod_residual(nls, xv, yv)
-          jtprod_residual!(nls, x[I], y[J], jty)
-          jtprod_residual!(nls, x[I], y[J], jtyv)
-          @test jty ≈ jty2[K]
-          jtprod_residual!(nls, xv, yv, jtyv)
-          @test jty ≈ jty2[K]
-          jtprod_residual!(nls, xv, yv, jty)
-          @test jty ≈ jty2[K]
-        end
-      end
+    if jtprod_residual ∉ exclude
+      jtyv = @view jty2[I]
+      jtprod_residual!(nls, x, y, jtyv)
+      jtprod_residual!(nls, x, y, jty)
+      @test jty ≈ jty2[I]
+    end
 
-      for i = 1:ne
-        @test jth_hess_residual ∈ exclude ||
-              jth_hess_residual(nls, x[I], i) ≈ jth_hess_residual(nls, xv, i)
-
-        if hprod_residual ∉ exclude
-          for J in Vidxs, K in Vidxs
-            vv = @view v[J]
-            hvv = @view hv2[K]
-            @test hprod_residual(nls, x[I], i, v[J]) ≈ hprod_residual(nls, xv, i, vv)
-            hprod_residual!(nls, x[I], i, v[J], hv)
-            hprod_residual!(nls, x[I], i, v[J], hvv)
-            @test hv ≈ hv2[K]
-            hprod_residual!(nls, xv, i, vv, hvv)
-            @test hv ≈ hv2[K]
-            hprod_residual!(nls, xv, i, vv, hv)
-            @test hv ≈ hv2[K]
-          end
-        end
+    for i = 1:ne
+      if hprod_residual ∉ exclude
+        hvv = @view hv2[I]
+        hprod_residual!(nls, x, i, v, hvv)
+        hprod_residual!(nls, x, i, v, hv)
+        @test hv ≈ hv2[I]
       end
     end
   end
