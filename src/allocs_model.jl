@@ -139,24 +139,39 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
       x = get_x0(nlp)
       vals = Vector{eltype(x)}(undef, nnzj)
       fun = Symbol(:jac_, type, :_coord!)
-      eval(fun)(nlp, x, vals)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, vals)
+      if type == :lin
+        eval(fun)(nlp, vals)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, vals)
+      else
+        eval(fun)(nlp, x, vals)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, x, vals)
+      end
     end
     if !(jprod in exclude)
       x = get_x0(nlp)
       v = copy(x)
       Jv = Vector{eltype(x)}(undef, nn)
       fun = Symbol(:jprod_, type, :!)
-      eval(fun)(nlp, x, v, Jv)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jv)
+      if type == :lin
+        eval(fun)(nlp, v, Jv)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, v, Jv)
+      else
+        eval(fun)(nlp, x, v, Jv)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jv)
+      end
     end
     if !(jtprod in exclude)
       x = get_x0(nlp)
       v = copy(get_y0(nlp)[1:nn])
       Jtv = similar(x)
       fun = Symbol(:jtprod_, type, :!)
-      eval(fun)(nlp, x, v, Jtv)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jtv)
+      if type == :lin
+        eval(fun)(nlp, v, Jtv)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, v, Jtv)
+      else
+        eval(fun)(nlp, x, v, Jtv)
+        nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jtv)
+      end
     end
     if !(jac_op in exclude)
       x = get_x0(nlp)
@@ -167,7 +182,7 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
       w = randn(eltype(x), nn)
       fun = Symbol(:jac_, type, :_op!)
       if type == :lin
-        J = jac_lin_op!(nlp, x, Jv, Jtv)
+        J = jac_lin_op!(nlp, Jv, Jtv)
         mul!(Jv, J, v)
         nlp_allocations[Symbol(:jac_lin_op_prod!)] = @allocated mul!(Jv, J, v)
         Jt = J'

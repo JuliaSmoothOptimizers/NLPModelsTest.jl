@@ -87,8 +87,8 @@ function multiple_precision_nls(
       end
       if linear_api && nls.meta.nlin > 0
         @test cons ∈ exclude || typeof(cons_lin(nls, x)) == S
-        @test jac ∈ exclude || eltype(jac_lin(nls, x)) == T
-        @test jac_op ∈ exclude || eltype(jac_lin_op(nls, x)) == T
+        @test jac ∈ exclude || eltype(jac_lin(nls)) == T
+        @test jac_op ∈ exclude || eltype(jac_lin_op(nls)) == T
       end
       if jac_coord ∉ exclude && jac_op ∉ exclude
         rows, cols = jac_structure(nls)
@@ -109,7 +109,7 @@ function multiple_precision_nls(
         end
         if linear_api && nls.meta.nlin > 0
           rows, cols = jac_lin_structure(nls)
-          vals = jac_lin_coord(nls, x)
+          vals = jac_lin_coord(nls)
           @test typeof(vals) == S
           Av = fill!(S(undef, nls.meta.nlin), T(0))
           Atv = fill!(S(undef, nls.meta.nvar), T(0))

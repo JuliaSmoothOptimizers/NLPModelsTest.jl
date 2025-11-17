@@ -21,3 +21,8 @@ Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [targets]
 test = ["CUDA", "Distributed"]
+
+
+[sources]
+NLPModels = { path = "../NLPModels.jl" }
+NLPModelsModifiers = { path = "../NLPModelsModifiers.jl" }

@@ -222,10 +222,10 @@ function NLPModels.jac_lin_structure!(
   return rows, cols
 end
 
-function NLPModels.jac_lin_coord!(nls::NLSLC, x::AbstractVector{T}, vals::AbstractVector) where {T}
-  @lencheck 15 x
+function NLPModels.jac_lin_coord!(nls::NLSLC, vals::AbstractVector)
   @lencheck 17 vals
   increment!(nls, :neval_jac_lin)
+  T = eltype(vals)
   vals[1] = T(15)
   vals[2] = T(1)
   vals[3] = T(2)
@@ -246,8 +246,8 @@ function NLPModels.jac_lin_coord!(nls::NLSLC, x::AbstractVector{T}, vals::Abstra
   return vals
 end
 
-function NLPModels.jprod_lin!(nls::NLSLC, x::AbstractVector, v::AbstractVector, Jv::AbstractVector)
-  @lencheck 15 x v
+function NLPModels.jprod_lin!(nls::NLSLC, v::AbstractVector, Jv::AbstractVector)
+  @lencheck 15 v
   @lencheck 11 Jv
   increment!(nls, :neval_jprod_lin)
   Jv[1] = 15 * v[15]
@@ -266,11 +266,10 @@ end
 
 function NLPModels.jtprod_lin!(
   nls::NLSLC,
-  x::AbstractVector,
   v::AbstractVector,
   Jtv::AbstractVector,
 )
-  @lencheck 15 x Jtv
+  @lencheck 15 Jtv
   @lencheck 11 v
   increment!(nls, :neval_jtprod_lin)
   Jtv[1] = 1 * v[7] + 3 * v[8]

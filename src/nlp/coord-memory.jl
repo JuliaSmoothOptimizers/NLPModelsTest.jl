@@ -48,11 +48,11 @@ function coord_memory_nlp(nlp::AbstractNLPModel; linear_api = false, exclude = [
       al2 = @allocated jac_coord!(nlp, x, vals)
       @test (al2 < al1) | (al2 == 0)
       if linear_api && nlp.meta.nlin > 0
-        vals = jac_lin_coord(nlp, x)
-        al1 = @allocated vals = jac_lin_coord(nlp, x)
+        vals = jac_lin_coord(nlp)
+        al1 = @allocated vals = jac_lin_coord(nlp)
         V = zeros(nlp.meta.lin_nnzj)
-        jac_lin_coord!(nlp, x, vals)
-        al2 = @allocated jac_lin_coord!(nlp, x, vals)
+        jac_lin_coord!(nlp, vals)
+        al2 = @allocated jac_lin_coord!(nlp, vals)
         @test (al2 < al1) | (al2 == 0)
       end
       if linear_api && nlp.meta.nnln > 0
