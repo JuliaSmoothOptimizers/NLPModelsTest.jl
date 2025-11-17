@@ -112,8 +112,9 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
     J = jac_op!(nlp, x, Jv, Jtv)
     mul!(Jv, J, v)
     nlp_allocations[:jac_op_prod!] = @allocated mul!(Jv, J, v)
-    mul!(Jtv, J', w)
-    nlp_allocations[:jac_op_transpose_prod!] = @allocated mul!(Jtv, J', w)
+    Jt = J'
+    mul!(Jtv, Jt, w)
+    nlp_allocations[:jac_op_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
   end
 
   for type in (:nln, :lin)
@@ -169,14 +170,16 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
         J = jac_lin_op!(nlp, x, Jv, Jtv)
         mul!(Jv, J, v)
         nlp_allocations[Symbol(:jac_lin_op_prod!)] = @allocated mul!(Jv, J, v)
-        mul!(Jtv, J', w)
-        nlp_allocations[Symbol(:jac_lin_op_transpose_prod!)] = @allocated mul!(Jtv, J', w)
+        Jt = J'
+        mul!(Jtv, Jt, w)
+        nlp_allocations[Symbol(:jac_lin_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
       else
         J = jac_nln_op!(nlp, x, Jv, Jtv)
         mul!(Jv, J, v)
         nlp_allocations[Symbol(:jac_nln_op_prod!)] = @allocated mul!(Jv, J, v)
-        mul!(Jtv, J', w)
-        nlp_allocations[Symbol(:jac_nln_op_transpose_prod!)] = @allocated mul!(Jtv, J', w)
+        Jt = J'
+        mul!(Jtv, Jt, w)
+        nlp_allocations[Symbol(:jac_nln_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
       end
     end
   end
@@ -286,8 +289,9 @@ function test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
     J = jac_op_residual!(nlp, x, Jv, Jtv)
     mul!(Jv, J, v)
     nlp_allocations[:jac_op_residual_prod!] = @allocated mul!(Jv, J, v)
-    mul!(Jtv, J', w)
-    nlp_allocations[:jac_op_residual_transpose_prod!] = @allocated mul!(Jtv, J', w)
+    Jt = J'
+    mul!(Jtv, Jt, w)
+    nlp_allocations[:jac_op_residual_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
   end
   if !(hess_residual in exclude)
     rows = Vector{Int}(undef, nlp.nls_meta.nnzh)
@@ -410,7 +414,12 @@ end
 function test_zero_allocations(table::Dict, name::String = "Generic")
   @testset "Test 0-allocations of NLPModel API for $name" begin
     for k in keys(table)
-      isnan(table[k]) || @test table[k] == 0
+      if !isnan(table[k])
+        if table[k] != 0
+            @info "Allocation of $k is $(table[k])"
+        end
+        @test table[k] == 0
+      end
     end
   end
 end
