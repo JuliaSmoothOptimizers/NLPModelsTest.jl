@@ -415,9 +415,7 @@ function test_zero_allocations(table::Dict, name::String = "Generic")
   @testset "Test 0-allocations of NLPModel API for $name" begin
     for k in keys(table)
       if !isnan(table[k])
-        if table[k] != 0
-            @info "Allocation of $k is $(table[k])"
-        end
+        (table[k] != 0) && @info "Allocation of $k is $(table[k])"
         @test table[k] == 0
       end
     end
