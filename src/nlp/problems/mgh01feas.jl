@@ -101,12 +101,11 @@ end
 
 function NLPModels.jac_lin_coord!(
   nls::MGH01Feas,
-  x::AbstractVector{T},
   vals::AbstractVector,
-) where {T}
-  @lencheck 2 x
+)
   @lencheck 1 vals
   increment!(nls, :neval_jac_lin)
+  T = eltype(vals)
   vals .= T(1)
   return vals
 end
@@ -126,11 +125,10 @@ end
 
 function NLPModels.jprod_lin!(
   nls::MGH01Feas,
-  x::AbstractVector,
   v::AbstractVector,
   Jv::AbstractVector,
 )
-  @lencheck 2 x v
+  @lencheck 2 v
   @lencheck 1 Jv
   increment!(nls, :neval_jprod_lin)
   Jv[1] = v[1]
@@ -166,11 +164,10 @@ end
 
 function NLPModels.jtprod_lin!(
   nls::MGH01Feas,
-  x::AbstractVector{T},
   v::AbstractVector,
-  Jtv::AbstractVector,
+  Jtv::AbstractVector{T},
 ) where {T}
-  @lencheck 2 x Jtv
+  @lencheck 2 Jtv
   @lencheck 1 v
   increment!(nls, :neval_jtprod_lin)
   Jtv[1] = v[1]
