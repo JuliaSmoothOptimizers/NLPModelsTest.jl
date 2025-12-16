@@ -317,21 +317,21 @@ function test_allocs_nlsmodels(nls::AbstractNLSModel; exclude = [])
   end
 
   if !(hess_residual in exclude) && nls_meta(nls).hess_residual_available
-    rows = Vector{Int}(undef, nlp.nls_meta.nnzh)
-    cols = Vector{Int}(undef, nlp.nls_meta.nnzh)
-    hess_structure_residual!(nlp, rows, cols)
-    nlp_allocations[:hess_structure_residual!] =
-      @allocated hess_structure_residual!(nlp, rows, cols)
-    x = get_x0(nlp)
-    v = ones(eltype(x), get_nequ(nlp))
-    vals = Vector{eltype(x)}(undef, nlp.nls_meta.nnzh)
-    hess_coord_residual!(nlp, x, v, vals)
-    nlp_allocations[:hess_coord_residual!] = @allocated hess_coord_residual!(nlp, x, v, vals)
+    rows = Vector{Int}(undef, nls.nls_meta.nnzh)
+    cols = Vector{Int}(undef, nls.nls_meta.nnzh)
+    hess_structure_residual!(nls, rows, cols)
+    nls_allocations[:hess_structure_residual!] =
+      @allocated hess_structure_residual!(nls, rows, cols)
+    x = get_x0(nls)
+    v = ones(eltype(x), get_nequ(nls))
+    vals = Vector{eltype(x)}(undef, nls.nls_meta.nnzh)
+    hess_coord_residual!(nls, x, v, vals)
+    nls_allocations[:hess_coord_residual!] = @allocated hess_coord_residual!(nls, x, v, vals)
   end
 
-  for i = 1:get_nequ(nlp)
+  for i = 1:get_nequ(nls)
     if !(hprod_residual in exclude) && nls_meta(nls).hprod_residual_available
-      x = get_x0(nlp)
+      x = get_x0(nls)
       v = copy(x)
       Hv = similar(x)
       hprod_residual!(nls, x, i, v, Hv)
