@@ -47,7 +47,7 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
     end
   end
 
-  if !(hprod in exclude)&& nlp.meta.hprod_available
+  if !(hprod in exclude) && nlp.meta.hprod_available
     x = get_x0(nlp)
     v = copy(x)
     Hv = similar(x)
@@ -109,7 +109,10 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
     nlp_allocations[:jtprod!] = @allocated jtprod!(nlp, x, v, Jtv)
   end
 
-  if get_ncon(nlp) > 0 && !(jac_op in exclude) && nlp.meta.jprod_available && nlp.meta.jtprod_available
+  if get_ncon(nlp) > 0 &&
+     !(jac_op in exclude) &&
+     nlp.meta.jprod_available &&
+     nlp.meta.jtprod_available
     x = get_x0(nlp)
     Jtv = similar(x)
     Jv = Vector{eltype(x)}(undef, get_ncon(nlp))
@@ -296,7 +299,9 @@ function test_allocs_nlsmodels(nls::AbstractNLSModel; exclude = [])
     nls_allocations[:jtprod_residual!] = @allocated jtprod_residual!(nls, x, w, Jtv)
   end
 
-  if !(jac_op_residual in exclude) && nls_meta(nls).jprod_residual_available && nls_meta(nls).jtprod_residual_available
+  if !(jac_op_residual in exclude) &&
+     nls_meta(nls).jprod_residual_available &&
+     nls_meta(nls).jtprod_residual_available
     x = get_x0(nls)
     Jtv = similar(x)
     Jv = Vector{eltype(x)}(undef, get_nequ(nls))
