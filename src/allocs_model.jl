@@ -239,7 +239,7 @@ function test_obj_grad!(nlp_allocations, nls::AbstractNLSModel, exclude)
 end
 
 """
-    test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
+    test_allocs_nlsmodels(nls::AbstractNLSModel; exclude = [])
 
 Returns a `Dict` containing allocations of the in-place functions specialized to nonlinear least squares of NLPModel API.
 
@@ -247,8 +247,8 @@ The keyword `exclude` takes a Array of Function to be excluded from the tests.
 Use `hess_residual` (resp. `jac_residual`) to exclude `hess_residual_coord` and `hess_residual_structure` (resp. `jac_residual_coord` and `jac_residual_structure`).
 The hessian-vector product is tested for all the component of the residual function, so exclude `hprod_residual` and `hess_op_residual` if you want to avoid this.
 """
-function test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
-  nlp_allocations = Dict(
+function test_allocs_nlsmodels(nls::AbstractNLSModel; exclude = [])
+  nls_allocations = Dict(
     :residual! => NaN,
     :hess_structure_residual! => NaN,
     :hess_coord_residual! => NaN,
@@ -263,85 +263,85 @@ function test_allocs_nlsmodels(nlp::AbstractNLSModel; exclude = [])
   )
 
   if !(residual in exclude)
-    x = get_x0(nlp)
-    Fx = Vector{eltype(x)}(undef, get_nequ(nlp))
-    residual!(nlp, x, Fx)
-    nlp_allocations[:residual!] = @allocated residual!(nlp, x, Fx)
+    x = get_x0(nls)
+    Fx = Vector{eltype(x)}(undef, get_nequ(nls))
+    residual!(nls, x, Fx)
+    nls_allocations[:residual!] = @allocated residual!(nls, x, Fx)
   end
 
   if !(jac_residual in exclude) && nls_meta(nls).jac_residual_available
-    rows = Vector{Int}(undef, nlp.nls_meta.nnzj)
-    cols = Vector{Int}(undef, nlp.nls_meta.nnzj)
-    jac_structure_residual!(nlp, rows, cols)
-    nlp_allocations[:jac_structure_residual!] = @allocated jac_structure_residual!(nlp, rows, cols)
-    x = get_x0(nlp)
-    vals = Vector{eltype(x)}(undef, nlp.nls_meta.nnzj)
-    jac_coord_residual!(nlp, x, vals)
-    nlp_allocations[:jac_coord_residual!] = @allocated jac_coord_residual!(nlp, x, vals)
+    rows = Vector{Int}(undef, nls.nls_meta.nnzj)
+    cols = Vector{Int}(undef, nls.nls_meta.nnzj)
+    jac_structure_residual!(nls, rows, cols)
+    nls_allocations[:jac_structure_residual!] = @allocated jac_structure_residual!(nls, rows, cols)
+    x = get_x0(nls)
+    vals = Vector{eltype(x)}(undef, nls.nls_meta.nnzj)
+    jac_coord_residual!(nls, x, vals)
+    nls_allocations[:jac_coord_residual!] = @allocated jac_coord_residual!(nls, x, vals)
   end
 
   if !(jprod_residual in exclude) && nls_meta(nls).jprod_residual_available
-    x = get_x0(nlp)
+    x = get_x0(nls)
     v = copy(x)
-    Jv = Vector{eltype(x)}(undef, get_nequ(nlp))
-    jprod_residual!(nlp, x, v, Jv)
-    nlp_allocations[:jprod_residual!] = @allocated jprod_residual!(nlp, x, v, Jv)
+    Jv = Vector{eltype(x)}(undef, get_nequ(nls))
+    jprod_residual!(nls, x, v, Jv)
+    nls_allocations[:jprod_residual!] = @allocated jprod_residual!(nls, x, v, Jv)
   end
 
   if !(jtprod_residual in exclude) && nls_meta(nls).jtprod_residual_available
-    x = get_x0(nlp)
-    w = zeros(eltype(x), get_nequ(nlp))
+    x = get_x0(nls)
+    w = zeros(eltype(x), get_nequ(nls))
     Jtv = similar(x)
-    jtprod_residual!(nlp, x, w, Jtv)
-    nlp_allocations[:jtprod_residual!] = @allocated jtprod_residual!(nlp, x, w, Jtv)
+    jtprod_residual!(nls, x, w, Jtv)
+    nls_allocations[:jtprod_residual!] = @allocated jtprod_residual!(nls, x, w, Jtv)
   end
 
   if !(jac_op_residual in exclude) && nls_meta(nls).jprod_residual_available && nls_meta(nls).jtprod_residual_available
-    x = get_x0(nlp)
+    x = get_x0(nls)
     Jtv = similar(x)
-    Jv = Vector{eltype(x)}(undef, get_nequ(nlp))
+    Jv = Vector{eltype(x)}(undef, get_nequ(nls))
 
     v = copy(x)
-    w = zeros(eltype(x), get_nequ(nlp))
-    J = jac_op_residual!(nlp, x, Jv, Jtv)
+    w = zeros(eltype(x), get_nequ(nls))
+    J = jac_op_residual!(nls, x, Jv, Jtv)
     mul!(Jv, J, v)
-    nlp_allocations[:jac_op_residual_prod!] = @allocated mul!(Jv, J, v)
+    nls_allocations[:jac_op_residual_prod!] = @allocated mul!(Jv, J, v)
     Jt = J'
     mul!(Jtv, Jt, w)
-    nlp_allocations[:jac_op_residual_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
+    nls_allocations[:jac_op_residual_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
   end
 
   if !(hess_residual in exclude) && nls_meta(nls).hess_residual_available
-    rows = Vector{Int}(undef, nlp.nls_meta.nnzh)
-    cols = Vector{Int}(undef, nlp.nls_meta.nnzh)
-    hess_structure_residual!(nlp, rows, cols)
-    nlp_allocations[:hess_structure_residual!] =
-      @allocated hess_structure_residual!(nlp, rows, cols)
-    x = get_x0(nlp)
-    v = ones(eltype(x), get_nequ(nlp))
-    vals = Vector{eltype(x)}(undef, nlp.nls_meta.nnzh)
-    hess_coord_residual!(nlp, x, v, vals)
-    nlp_allocations[:hess_coord_residual!] = @allocated hess_coord_residual!(nlp, x, v, vals)
+    rows = Vector{Int}(undef, nls.nls_meta.nnzh)
+    cols = Vector{Int}(undef, nls.nls_meta.nnzh)
+    hess_structure_residual!(nls, rows, cols)
+    nls_allocations[:hess_structure_residual!] =
+      @allocated hess_structure_residual!(nls, rows, cols)
+    x = get_x0(nls)
+    v = ones(eltype(x), get_nequ(nls))
+    vals = Vector{eltype(x)}(undef, nls.nls_meta.nnzh)
+    hess_coord_residual!(nls, x, v, vals)
+    nls_allocations[:hess_coord_residual!] = @allocated hess_coord_residual!(nls, x, v, vals)
   end
 
-  for i = 1:get_nequ(nlp)
+  for i = 1:get_nequ(nls)
     if !(hprod_residual in exclude) && nls_meta(nls).hprod_residual_available
-      x = get_x0(nlp)
+      x = get_x0(nls)
       v = copy(x)
       Hv = similar(x)
-      hprod_residual!(nlp, x, i, v, Hv)
-      nlp_allocations[:hprod_residual!] = @allocated hprod_residual!(nlp, x, i, v, Hv)
+      hprod_residual!(nls, x, i, v, Hv)
+      nls_allocations[:hprod_residual!] = @allocated hprod_residual!(nls, x, i, v, Hv)
     end
     if !(hess_op_residual in exclude) && nls_meta(nls).jprod_residual_available
-      x = get_x0(nlp)
+      x = get_x0(nls)
       Hv = similar(x)
       v = copy(x)
-      H = hess_op_residual!(nlp, x, i, Hv)
+      H = hess_op_residual!(nls, x, i, Hv)
       mul!(Hv, H, v)
-      nlp_allocations[:hess_op_residual_prod!] = @allocated mul!(Hv, H, v)
+      nls_allocations[:hess_op_residual_prod!] = @allocated mul!(Hv, H, v)
     end
   end
-  return nlp_allocations
+  return nls_allocations
 end
 
 function NLPModels.histline(s::String, v::Integer, maxv::Integer)
