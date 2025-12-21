@@ -31,172 +31,197 @@ function test_allocs_nlpmodels(nlp::AbstractNLPModel; linear_api = false, exclud
 
   test_obj_grad!(nlp_allocations, nlp, exclude)
 
-  if !(hess in exclude) && nlp.meta.hess_available
-    rows = Vector{Int}(undef, nlp.meta.nnzh)
-    cols = Vector{Int}(undef, nlp.meta.nnzh)
-    hess_structure!(nlp, rows, cols)
-    nlp_allocations[:hess_structure!] = @allocated hess_structure!(nlp, rows, cols)
-    x = get_x0(nlp)
-    vals = Vector{eltype(x)}(undef, nlp.meta.nnzh)
-    hess_coord!(nlp, x, vals)
-    nlp_allocations[:hess_coord!] = @allocated hess_coord!(nlp, x, vals)
-    if get_ncon(nlp) > 0
-      y = get_y0(nlp)
-      hess_coord!(nlp, x, y, vals)
-      nlp_allocations[:hess_lag_coord!] = @allocated hess_coord!(nlp, x, y, vals)
-    end
-  end
-
-  if !(hprod in exclude) && nlp.meta.hprod_available
-    x = get_x0(nlp)
-    v = copy(x)
-    Hv = similar(x)
-    hprod!(nlp, x, v, Hv)
-    nlp_allocations[:hprod!] = @allocated hprod!(nlp, x, v, Hv)
-    if get_ncon(nlp) > 0
-      y = get_y0(nlp)
-      hprod!(nlp, x, y, v, Hv)
-      nlp_allocations[:hprod_lag!] = @allocated hprod!(nlp, x, y, v, Hv)
-    end
-  end
-
-  if !(hess_op in exclude) && nlp.meta.hprod_available
-    x = get_x0(nlp)
-    Hv = similar(x)
-    v = copy(x)
-    H = hess_op!(nlp, x, Hv)
-    mul!(Hv, H, v)
-    nlp_allocations[:hess_op_prod!] = @allocated mul!(Hv, H, v)
-    if get_ncon(nlp) > 0
-      y = get_y0(nlp)
-      H = hess_op!(nlp, x, y, Hv)
-      mul!(Hv, H, v)
-      nlp_allocations[:hess_lag_op_prod!] = @allocated mul!(Hv, H, v)
-    end
-  end
-
-  if get_ncon(nlp) > 0 && !(cons in exclude)
-    x = get_x0(nlp)
-    c = Vector{eltype(x)}(undef, get_ncon(nlp))
-    cons!(nlp, x, c)
-    nlp_allocations[:cons!] = @allocated cons!(nlp, x, c)
-  end
-
-  if get_ncon(nlp) > 0 && !(jac in exclude) && nlp.meta.jac_available
-    rows = Vector{Int}(undef, nlp.meta.nnzj)
-    cols = Vector{Int}(undef, nlp.meta.nnzj)
-    jac_structure!(nlp, rows, cols)
-    nlp_allocations[:jac_structure!] = @allocated jac_structure!(nlp, rows, cols)
-    x = get_x0(nlp)
-    vals = Vector{eltype(x)}(undef, nlp.meta.nnzj)
-    jac_coord!(nlp, x, vals)
-    nlp_allocations[:jac_coord!] = @allocated jac_coord!(nlp, x, vals)
-  end
-
-  if get_ncon(nlp) > 0 && !(jprod in exclude) && nlp.meta.jprod_available
-    x = get_x0(nlp)
-    v = copy(x)
-    Jv = Vector{eltype(x)}(undef, get_ncon(nlp))
-    jprod!(nlp, x, v, Jv)
-    nlp_allocations[:jprod!] = @allocated jprod!(nlp, x, v, Jv)
-  end
-
-  if get_ncon(nlp) > 0 && !(jtprod in exclude) && nlp.meta.jtprod_available
-    x = get_x0(nlp)
-    v = copy(get_y0(nlp))
-    Jtv = similar(x)
-    jtprod!(nlp, x, v, Jtv)
-    nlp_allocations[:jtprod!] = @allocated jtprod!(nlp, x, v, Jtv)
-  end
-
-  if get_ncon(nlp) > 0 &&
-     !(jac_op in exclude) &&
-     nlp.meta.jprod_available &&
-     nlp.meta.jtprod_available
-    x = get_x0(nlp)
-    Jtv = similar(x)
-    Jv = Vector{eltype(x)}(undef, get_ncon(nlp))
-
-    v = copy(x)
-    w = copy(get_y0(nlp))
-    J = jac_op!(nlp, x, Jv, Jtv)
-    mul!(Jv, J, v)
-    nlp_allocations[:jac_op_prod!] = @allocated mul!(Jv, J, v)
-    Jt = J'
-    mul!(Jtv, Jt, w)
-    nlp_allocations[:jac_op_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
-  end
-
-  for type in (:nln, :lin)
-    nn = type == :lin ? nlp.meta.nlin : nlp.meta.nnln
-    nnzj = type == :lin ? nlp.meta.lin_nnzj : nlp.meta.nln_nnzj
-    if !linear_api || (nn == 0)
-      continue
-    end
-    if !(cons in exclude)
+  @testset "hess_structure! and hess_coord!" begin
+    if !(hess in exclude) && nlp.meta.hess_available
+      rows = Vector{Int}(undef, nlp.meta.nnzh)
+      cols = Vector{Int}(undef, nlp.meta.nnzh)
+      hess_structure!(nlp, rows, cols)
+      nlp_allocations[:hess_structure!] = @allocated hess_structure!(nlp, rows, cols)
       x = get_x0(nlp)
-      c = Vector{eltype(x)}(undef, nn)
-      fun = Symbol(:cons_, type, :!)
-      eval(fun)(nlp, x, c)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, c)
-    end
-
-    if !(jac in exclude) && nlp.meta.jac_available
-      rows = Vector{Int}(undef, nnzj)
-      cols = Vector{Int}(undef, nnzj)
-      fun = type == :lin ? jac_lin_structure! : jac_nln_structure! # eval(fun) would allocate here
-      fun(nlp, rows, cols)
-      nlp_allocations[Symbol(fun)] = @allocated fun(nlp, rows, cols)
-      x = get_x0(nlp)
-      vals = Vector{eltype(x)}(undef, nnzj)
-      fun = Symbol(:jac_, type, :_coord!)
-      eval(fun)(nlp, x, vals)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, vals)
-    end
-
-    if !(jprod in exclude) && nlp.meta.jprod_available
-      x = get_x0(nlp)
-      v = copy(x)
-      Jv = Vector{eltype(x)}(undef, nn)
-      fun = Symbol(:jprod_, type, :!)
-      eval(fun)(nlp, x, v, Jv)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jv)
-    end
-
-    if !(jtprod in exclude) && nlp.meta.jtprod_available
-      x = get_x0(nlp)
-      v = copy(get_y0(nlp)[1:nn])
-      Jtv = similar(x)
-      fun = Symbol(:jtprod_, type, :!)
-      eval(fun)(nlp, x, v, Jtv)
-      nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jtv)
-    end
-
-    if !(jac_op in exclude) && nlp.meta.jprod_available && nlp.meta.jtprod_available
-      x = get_x0(nlp)
-      Jtv = similar(x)
-      Jv = Vector{eltype(x)}(undef, nn)
-
-      v = copy(x)
-      w = randn(eltype(x), nn)
-      fun = Symbol(:jac_, type, :_op!)
-      if type == :lin
-        J = jac_lin_op!(nlp, x, Jv, Jtv)
-        mul!(Jv, J, v)
-        nlp_allocations[Symbol(:jac_lin_op_prod!)] = @allocated mul!(Jv, J, v)
-        Jt = J'
-        mul!(Jtv, Jt, w)
-        nlp_allocations[Symbol(:jac_lin_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
-      else
-        J = jac_nln_op!(nlp, x, Jv, Jtv)
-        mul!(Jv, J, v)
-        nlp_allocations[Symbol(:jac_nln_op_prod!)] = @allocated mul!(Jv, J, v)
-        Jt = J'
-        mul!(Jtv, Jt, w)
-        nlp_allocations[Symbol(:jac_nln_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
+      vals = Vector{eltype(x)}(undef, nlp.meta.nnzh)
+      hess_coord!(nlp, x, vals)
+      nlp_allocations[:hess_coord!] = @allocated hess_coord!(nlp, x, vals)
+      if get_ncon(nlp) > 0
+        y = get_y0(nlp)
+        hess_coord!(nlp, x, y, vals)
+        nlp_allocations[:hess_lag_coord!] = @allocated hess_coord!(nlp, x, y, vals)
       end
     end
   end
+
+  @testset "hprod!" begin
+    if !(hprod in exclude)&& nlp.meta.hprod_available
+      x = get_x0(nlp)
+      v = copy(x)
+      Hv = similar(x)
+      hprod!(nlp, x, v, Hv)
+      nlp_allocations[:hprod!] = @allocated hprod!(nlp, x, v, Hv)
+      if get_ncon(nlp) > 0
+        y = get_y0(nlp)
+        hprod!(nlp, x, y, v, Hv)
+        nlp_allocations[:hprod_lag!] = @allocated hprod!(nlp, x, y, v, Hv)
+      end
+    end
+  end
+
+  @testset "hessian operators" begin
+    if !(hess_op in exclude) && nlp.meta.hprod_available
+      x = get_x0(nlp)
+      Hv = similar(x)
+      v = copy(x)
+      H = hess_op!(nlp, x, Hv)
+      mul!(Hv, H, v)
+      nlp_allocations[:hess_op_prod!] = @allocated mul!(Hv, H, v)
+      if get_ncon(nlp) > 0
+        y = get_y0(nlp)
+        H = hess_op!(nlp, x, y, Hv)
+        mul!(Hv, H, v)
+        nlp_allocations[:hess_lag_op_prod!] = @allocated mul!(Hv, H, v)
+      end
+    end
+  end
+
+  @testset "cons!" begin
+    if get_ncon(nlp) > 0 && !(cons in exclude)
+      x = get_x0(nlp)
+      c = Vector{eltype(x)}(undef, get_ncon(nlp))
+      cons!(nlp, x, c)
+      nlp_allocations[:cons!] = @allocated cons!(nlp, x, c)
+    end
+  end
+
+  @testset "jac_structure! and jac_coord!" begin
+    if get_ncon(nlp) > 0 && !(jac in exclude) && nlp.meta.jac_available
+      rows = Vector{Int}(undef, nlp.meta.nnzj)
+      cols = Vector{Int}(undef, nlp.meta.nnzj)
+      jac_structure!(nlp, rows, cols)
+      nlp_allocations[:jac_structure!] = @allocated jac_structure!(nlp, rows, cols)
+      x = get_x0(nlp)
+      vals = Vector{eltype(x)}(undef, nlp.meta.nnzj)
+      jac_coord!(nlp, x, vals)
+      nlp_allocations[:jac_coord!] = @allocated jac_coord!(nlp, x, vals)
+    end
+  end
+
+  @testset "jprod!" begin
+    if get_ncon(nlp) > 0 && !(jprod in exclude) && nlp.meta.jprod_available
+      x = get_x0(nlp)
+      v = copy(x)
+      Jv = Vector{eltype(x)}(undef, get_ncon(nlp))
+      jprod!(nlp, x, v, Jv)
+      nlp_allocations[:jprod!] = @allocated jprod!(nlp, x, v, Jv)
+    end
+  end
+
+  @testset "jtprod!" begin
+    if get_ncon(nlp) > 0 && !(jtprod in exclude) && nlp.meta.jtprod_available
+      x = get_x0(nlp)
+      v = copy(get_y0(nlp))
+      Jtv = similar(x)
+      jtprod!(nlp, x, v, Jtv)
+      nlp_allocations[:jtprod!] = @allocated jtprod!(nlp, x, v, Jtv)
+    end
+  end
+
+  @testset "jacobian operators"
+    if get_ncon(nlp) > 0 && !(jac_op in exclude) && nlp.meta.jprod_available && nlp.meta.jtprod_available
+      x = get_x0(nlp)
+      Jtv = similar(x)
+      Jv = Vector{eltype(x)}(undef, get_ncon(nlp))
+
+      v = copy(x)
+      w = copy(get_y0(nlp))
+      J = jac_op!(nlp, x, Jv, Jtv)
+      mul!(Jv, J, v)
+      nlp_allocations[:jac_op_prod!] = @allocated mul!(Jv, J, v)
+      Jt = J'
+      mul!(Jtv, Jt, w)
+      nlp_allocations[:jac_op_transpose_prod!] = @allocated mul!(Jtv, Jt, w)
+    end
+  end
+
+  @testset "linear api" begin
+    for type in (:nln, :lin)
+      nn = type == :lin ? nlp.meta.nlin : nlp.meta.nnln
+      nnzj = type == :lin ? nlp.meta.lin_nnzj : nlp.meta.nln_nnzj
+      if !linear_api || (nn == 0)
+        continue
+      end
+
+      @testset "cons!" begin
+        if !(cons in exclude)
+          x = get_x0(nlp)
+          c = Vector{eltype(x)}(undef, nn)
+          fun = Symbol(:cons_, type, :!)
+          eval(fun)(nlp, x, c)
+          nlp_allocations[fun] = @allocated eval(fun)(nlp, x, c)
+        end
+      end
+
+      @testset "jac_structure! and jac_coord!" begin
+        if !(jac in exclude) && nlp.meta.jac_available
+          rows = Vector{Int}(undef, nnzj)
+          cols = Vector{Int}(undef, nnzj)
+          fun = type == :lin ? jac_lin_structure! : jac_nln_structure! # eval(fun) would allocate here
+          fun(nlp, rows, cols)
+          nlp_allocations[Symbol(fun)] = @allocated fun(nlp, rows, cols)
+          x = get_x0(nlp)
+          vals = Vector{eltype(x)}(undef, nnzj)
+          fun = Symbol(:jac_, type, :_coord!)
+          eval(fun)(nlp, x, vals)
+          nlp_allocations[fun] = @allocated eval(fun)(nlp, x, vals)
+        end
+      end
+
+      @testset "jprod!" begin
+        if !(jprod in exclude) && nlp.meta.jprod_available
+          x = get_x0(nlp)
+          v = copy(x)
+          Jv = Vector{eltype(x)}(undef, nn)
+          fun = Symbol(:jprod_, type, :!)
+          eval(fun)(nlp, x, v, Jv)
+          nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jv)
+        end
+      end
+
+      @testset "jtprod!" begin
+        if !(jtprod in exclude) && nlp.meta.jtprod_available
+          x = get_x0(nlp)
+          v = copy(get_y0(nlp)[1:nn])
+          Jtv = similar(x)
+          fun = Symbol(:jtprod_, type, :!)
+          eval(fun)(nlp, x, v, Jtv)
+          nlp_allocations[fun] = @allocated eval(fun)(nlp, x, v, Jtv)
+        end
+      end
+
+      @testset "jacobian operators" begin
+        if !(jac_op in exclude) && nlp.meta.jprod_available && nlp.meta.jtprod_available
+          x = get_x0(nlp)
+          Jtv = similar(x)
+          Jv = Vector{eltype(x)}(undef, nn)
+
+          v = copy(x)
+          w = randn(eltype(x), nn)
+          fun = Symbol(:jac_, type, :_op!)
+          if type == :lin
+            J = jac_lin_op!(nlp, x, Jv, Jtv)
+            mul!(Jv, J, v)
+            nlp_allocations[Symbol(:jac_lin_op_prod!)] = @allocated mul!(Jv, J, v)
+            Jt = J'
+            mul!(Jtv, Jt, w)
+            nlp_allocations[Symbol(:jac_lin_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
+          else
+            J = jac_nln_op!(nlp, x, Jv, Jtv)
+            mul!(Jv, J, v)
+            nlp_allocations[Symbol(:jac_nln_op_prod!)] = @allocated mul!(Jv, J, v)
+            Jt = J'
+            mul!(Jtv, Jt, w)
+            nlp_allocations[Symbol(:jac_nln_op_transpose_prod!)] = @allocated mul!(Jtv, Jt, w)
+          end
+        end
+      end
+    end
   return nlp_allocations
 end
 
@@ -208,35 +233,43 @@ Update `nlp_allocations` with allocations of the in-place `obj` and `grad` funct
 For `AbstractNLSModel`, this uses `obj` and `grad` with pre-allocated residual.
 """
 function test_obj_grad!(nlp_allocations, nlp::AbstractNLPModel, exclude)
-  if !(obj in exclude)
-    x = get_x0(nlp)
-    obj(nlp, x)
-    nlp_allocations[:obj] = @allocated obj(nlp, x)
+  @testset "obj" begin
+    if !(obj in exclude)
+      x = get_x0(nlp)
+      obj(nlp, x)
+      nlp_allocations[:obj] = @allocated obj(nlp, x)
+    end
   end
 
-  if !(grad in exclude) && nlp.meta.grad_available
-    x = get_x0(nlp)
-    g = similar(x)
-    grad!(nlp, x, g)
-    nlp_allocations[:grad!] = @allocated grad!(nlp, x, g)
+  @testset "grad!" begin
+    if !(grad in exclude) && nlp.meta.grad_available
+      x = get_x0(nlp)
+      g = similar(x)
+      grad!(nlp, x, g)
+      nlp_allocations[:grad!] = @allocated grad!(nlp, x, g)
+    end
   end
   return nlp_allocations
 end
 
 function test_obj_grad!(nlp_allocations, nls::AbstractNLSModel, exclude)
-  if !(obj in exclude)
-    x = get_x0(nls)
-    Fx = Vector{eltype(x)}(undef, get_nequ(nls))
-    obj(nls, x, Fx)
-    nlp_allocations[:obj] = @allocated obj(nls, x, Fx)
+  @testset "obj" begin
+    if !(obj in exclude)
+      x = get_x0(nls)
+      Fx = Vector{eltype(x)}(undef, get_nequ(nls))
+      obj(nls, x, Fx)
+      nlp_allocations[:obj] = @allocated obj(nls, x, Fx)
+    end
   end
 
-  if !(grad in exclude) && nls_meta(nls).jtprod_residual_available
-    x = get_x0(nls)
-    Fx = Vector{eltype(x)}(undef, get_nequ(nls))
-    g = similar(x)
-    grad!(nls, x, g, Fx)
-    nlp_allocations[:grad!] = @allocated grad!(nls, x, g, Fx)
+  @testset "grad!" begin
+    if !(grad in exclude) && nls_meta(nls).jtprod_residual_available
+      x = get_x0(nls)
+      Fx = Vector{eltype(x)}(undef, get_nequ(nls))
+      g = similar(x)
+      grad!(nls, x, g, Fx)
+      nlp_allocations[:grad!] = @allocated grad!(nls, x, g, Fx)
+    end
   end
   return nlp_allocations
 end
