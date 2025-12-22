@@ -86,7 +86,7 @@ end
 function consistent_nls_meta(nlss; rtol = 1.0e-8)
   fields = [:nequ, :nvar, :x0]
   boolean_fields = [:jac_residual_available, :hess_residual_available, :jprod_residual_available, :jtprod_residual_available, :hprod_residual_available]
-  N = length(nlps)
+  N = length(nlss)
   for field in fields
     @testset "Field $field" begin
       for i = 1:(N - 1)
