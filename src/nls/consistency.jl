@@ -20,6 +20,7 @@ function consistent_nlss(
   test_slack = true,
   test_ff = true,
   test_counters = true,
+  rtol = 1.0e-8,
 )
   @testset "consistent_nlss" begin
     @testset "NLS counters" begin
