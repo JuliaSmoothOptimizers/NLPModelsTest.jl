@@ -1,5 +1,3 @@
-import LinearAlgebra: I
-
 export consistent_nlss
 
 """
@@ -18,44 +16,92 @@ function consistent_nlss(
   nlss;
   exclude = [hess, hess_coord, jth_hess, jth_hess_coord, jth_hprod, ghjvprod],
   linear_api = false,
+  test_meta = true,
   test_slack = true,
   test_ff = true,
   test_counters = true,
 )
-  consistent_nls_counters(nlss)
-  test_counters && consistent_counters(nlss, linear_api = linear_api)
-  consistent_nls_functions(nlss, exclude = exclude)
-  consistent_nls_counters(nlss)
-  test_counters && consistent_counters(nlss, linear_api = linear_api)
-  for nls in nlss
-    reset!(nls)
-  end
-  consistent_functions(nlss, linear_api = linear_api, exclude = exclude)
+  @testset "consistent_nlss" begin
+    @testset "NLS counters" begin
+      test_counters && consistent_nls_counters(nlss)
+    end
+    @testset "NLP meta" begin
+      test_meta && consistent_meta(nlss, rtol = rtol)
+    end
+    @testset "NLS meta" begin
+      test_meta && consistent_nls_meta(nlss, rtol = rtol)
+    end
+    @testset "NLP counters" begin
+      test_counters && consistent_counters(nlss, linear_api = linear_api)
+    end
+    @testset "NLS functions" begin
+      consistent_nls_functions(nlss, exclude = exclude)
+    end
+    @testset "NLS counters v2" begin
+      test_counters && consistent_nls_counters(nlss)
+    end
+    @testset "NLP counters v2" begin
+      test_counters && consistent_counters(nlss, linear_api = linear_api)
+      for nls in nlss
+        reset!(nls)
+      end
+    end
+    @testset "NLP functions" begin
+      consistent_functions(nlss, linear_api = linear_api, exclude = exclude)
+    end
 
-  if test_slack && has_inequalities(nlss[1])
-    reset!.(nlss)
-    slack_nlss = SlackNLSModel.(nlss)
-    consistent_nls_functions(slack_nlss, exclude = exclude)
-    test_counters && consistent_nls_counters(slack_nlss)
-    test_counters && consistent_counters(slack_nlss, linear_api = linear_api)
-    consistent_functions(
-      slack_nlss,
-      linear_api = linear_api,
-      exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
-    )
-  end
+    @testset "slack" begin
+      if test_slack && has_inequalities(nlss[1])
+        reset!.(nlss)
+        slack_nlss = SlackNLSModel.(nlss)
+        consistent_nls_functions(slack_nlss, exclude = exclude)
+        test_counters && consistent_nls_counters(slack_nlss)
+        test_counters && consistent_counters(slack_nlss, linear_api = linear_api)
+        consistent_functions(
+          slack_nlss,
+          linear_api = linear_api,
+          exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
+        )
+      end
+    end
 
-  if test_ff
-    reset!.(nlss)
-    ff_nlss = FeasibilityFormNLS.(nlss)
-    consistent_nls_functions(ff_nlss, exclude = exclude)
-    test_counters && consistent_nls_counters(ff_nlss)
-    test_counters && consistent_counters(ff_nlss, linear_api = false)
-    consistent_functions(
-      ff_nlss,
-      linear_api = false,
-      exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
-    )
+    @testset "feasibility form" begin
+      if test_ff
+        reset!.(nlss)
+        ff_nlss = FeasibilityFormNLS.(nlss)
+        consistent_nls_functions(ff_nlss, exclude = exclude)
+        test_counters && consistent_nls_counters(ff_nlss)
+        test_counters && consistent_counters(ff_nlss, linear_api = false)
+        consistent_functions(
+          ff_nlss,
+          linear_api = false,
+          exclude = [jth_hess, jth_hess_coord, jth_hprod] ∪ exclude,
+        )
+      end
+    end
+  end
+end
+
+function consistent_nls_meta(nlss; rtol = 1.0e-8)
+  fields = [:nequ, :nvar, :x0]
+  boolean_fields = [:jac_residual_available, :hess_residual_available, :jprod_residual_available, :jtprod_residual_available, :hprod_residual_available]
+  N = length(nlps)
+  for field in fields
+    @testset "Field $field" begin
+      for i = 1:(N - 1)
+        fi = getfield(nls_meta(nlss[i]), field)
+        fj = getfield(nls_meta(nlss[i+1]), field)
+        @test isapprox(fi, fj, rtol = rtol)
+      end
+    end
+  end
+  for field in boolean_fields
+    @testset "Field $field" begin
+      for i = 1:(N - 1)
+        fi = getfield(nls_meta(nlss[i]), field)
+        fj = getfield(nls_meta(nlss[i+1]), field)
+      end
+    end
   end
 end
 
