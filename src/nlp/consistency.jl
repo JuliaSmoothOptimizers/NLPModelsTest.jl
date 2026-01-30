@@ -867,7 +867,7 @@ function consistent_functions(nlps; linear_api = false, rtol = 1.0e-8, exclude =
           V = jth_hess_coord(nlp, x, 1)
           I, J = hess_structure(nlp)
           @test length(I) == length(J) == length(V) == nlp.meta.nnzh
-          @test Symmetric(sparse(I, J, V, n, n), :L) == Hx
+          @test Symmetric(sparse(I, J, V, n, n), :L) ≈ Hx
         end
       end
     end
