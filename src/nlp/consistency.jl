@@ -26,7 +26,8 @@ function consistent_nlps(
 )
   @testset "consistent_nlps" begin
     @testset "counters" begin
-      test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+      test_counters &&
+        consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
     end
     @testset "meta" begin
       test_meta && consistent_meta(nlps, rtol = rtol)
@@ -35,11 +36,13 @@ function consistent_nlps(
       consistent_functions(nlps, linear_api = linear_api, rtol = rtol, exclude = exclude)
     end
     @testset "counters v2" begin
-      test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+      test_counters &&
+        consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
       for nlp in nlps
         reset!(nlp)
       end
-      test_counters && consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
+      test_counters &&
+        consistent_counters(nlps, linear_api = linear_api, reimplemented = reimplemented)
     end
     @testset "derivative" begin
       if test_derivative
@@ -62,10 +65,14 @@ function consistent_nlps(
         consistent_functions(
           [nlps; qnmodels],
           linear_api = linear_api,
-          exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪ exclude,
+          exclude = [hess, hess_coord, hprod, jth_hess, jth_hess_coord, jth_hprod, ghjvprod] ∪
+                    exclude,
         )
-        test_counters &&
-          consistent_counters([nlps; qnmodels], linear_api = linear_api, reimplemented = reimplemented)
+        test_counters && consistent_counters(
+          [nlps; qnmodels],
+          linear_api = linear_api,
+          reimplemented = reimplemented,
+        )
       end
     end
 
@@ -87,7 +94,14 @@ end
 
 function consistent_meta(nlps; rtol = 1.0e-8)
   fields = [:nvar, :x0, :lvar, :uvar, :ifix, :ilow, :iupp, :irng, :ifree, :ncon, :y0]
-  boolean_fields = [:grad_available, :jac_available, :hess_available, :jprod_available, :jtprod_available, :hprod_available]
+  boolean_fields = [
+    :grad_available,
+    :jac_available,
+    :hess_available,
+    :jprod_available,
+    :jtprod_available,
+    :hprod_available,
+  ]
   N = length(nlps)
   for field in fields
     @testset "Field $field" begin
