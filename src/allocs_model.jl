@@ -427,7 +427,7 @@ function test_zero_allocations(nlp::AbstractNLPModel; kwargs...)
   return test_zero_allocations(table, get_name(nlp))
 end
 
-function test_zero_allocations(nlp::AbstractNLSModel; linear_api = linear_api, kwargs...)
+function test_zero_allocations(nlp::AbstractNLSModel; linear_api = false, kwargs...)
   table_nlp = test_allocs_nlpmodels(nlp; linear_api = linear_api, kwargs...)
   table_nls = test_allocs_nlsmodels(nlp; kwargs...)
   table = merge(table_nlp, table_nls)
