@@ -37,9 +37,8 @@ function NLPModels.obj(nlp::BROWNDEN, x::AbstractVector{T}) where {T}
   @lencheck 4 x
   increment!(nlp, :neval_obj)
   return sum(
-    (
-      (x[1] + x[2] * T(i) / 5 - exp(T(i) / 5))^2 + (x[3] + x[4] * sin(T(i) / 5) - cos(T(i) / 5))^2
-    )^2 for i = 1:20
+    ((x[1] + x[2] * T(i) / 5 - exp(T(i) / 5))^2 + (x[3] + x[4] * sin(T(i) / 5) - cos(T(i) / 5))^2)^2
+    for i = 1:20
   )
 end
 
