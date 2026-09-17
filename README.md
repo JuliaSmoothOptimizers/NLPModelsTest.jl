@@ -13,7 +13,6 @@ If you use NLPModelsTest.jl in your work, please cite using the format given in 
 [![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/NLPModelsTest.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaSmoothOptimizers/NLPModelsTest.jl)
 
 ![CI](https://github.com/JuliaSmoothOptimizers/NLPModelsTest.jl/workflows/CI/badge.svg?branch=main)
-[![Cirrus CI - Base Branch Build Status](https://img.shields.io/cirrus/github/JuliaSmoothOptimizers/NLPModelsTest.jl?logo=Cirrus%20CI)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/NLPModelsTest.jl)
 
 ## Usage
 
